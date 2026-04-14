@@ -5,10 +5,11 @@
  * cargos (admin) e navegar para a gestão detalhada de cada conta.
  */
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import useAdminStore from '../store/useAdminStore.js';
 import tokenStore from '../store/tokenStore.js';
+import { AdminService } from '../services/api';
 
 import '../styles/ClientLead.css';
 import '../styles/Admin.css';
@@ -28,6 +29,11 @@ export default function Admin() {
     // --- ESTADOS DA STORE DE ADMINISTRAÇÃO ---
     /** @type {Object} Dados e funções de ação provenientes da useAdminStore. */
     const { users, loading, error, fetchUsers } = useAdminStore();
+
+    // NOVOS ESTADOS PARA O CONVITE:
+    const [inviteEmail, setInviteEmail] = useState('');
+    const [inviteMsg, setInviteMsg] = useState({ texto: '', tipo: '' });
+    const [loadingInvite, setLoadingInvite] = useState(false);
 
     /**
      * Efeito de carregamento: Procura a lista de utilizadores no servidor assim que o componente é montado.
@@ -52,12 +58,52 @@ export default function Admin() {
         });
     }, [users]);
 
+    const handleConvidar = async (e) => {
+        e.preventDefault();
+        setLoadingInvite(true);
+        setInviteMsg({ texto: '', tipo: '' });
+
+        try {
+            await AdminService.inviteUser(inviteEmail);
+            setInviteMsg({ texto: 'Convite enviado com sucesso para o MailHog!', tipo: 'sucesso' });
+            setInviteEmail(''); // Limpa o campo
+        } catch (error) {
+            setInviteMsg({ texto: error.message || 'Erro ao enviar convite.', tipo: 'erro' });
+        } finally {
+            setLoadingInvite(false);
+        }
+    };
+
     /** @type {string} URL da imagem de avatar padrão para utilizadores sem foto. */
     const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
     return (
         <div className="admin-container">
             <h2 className="admin-title">Gestão de Utilizadores</h2>
+
+            {/* --- NOVA SECÇÃO DE CONVITE --- */}
+            <div className="invite-section" style={{ background: '#f8f9fa', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
+                <h3>Convidar Novo Utilizador</h3>
+                <form onSubmit={handleConvidar} style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px' }}>
+                    <input
+                        type="email"
+                        placeholder="E-mail do novo utilizador"
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                        required
+                        style={{ padding: '10px', width: '100%', borderRadius: '4px', border: '1px solid #ccc' }}
+                    />
+                    <button type="submit" className="btn-auth" disabled={loadingInvite} style={{ margin: 0 }}>
+                        {loadingInvite ? 'A enviar...' : 'Enviar Convite'}
+                    </button>
+                </form>
+                {inviteMsg.texto && (
+                    <p style={{ marginTop: '10px', fontWeight: 'bold', color: inviteMsg.tipo === 'sucesso' ? '#27ae60' : '#e74c3c' }}>
+                        {inviteMsg.texto}
+                    </p>
+                )}
+            </div>
+            {/* ------------------------------- */}
 
             {/* Exibição de mensagens de erro globais da store */}
             {error && <div className="alert-message alert-error">{error}</div>}

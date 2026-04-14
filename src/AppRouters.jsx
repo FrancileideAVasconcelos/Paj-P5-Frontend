@@ -25,7 +25,8 @@ export default function AppRoutes({ token }) {
         <Routes>
             {/* Rotas de Autenticação */}
             <Route path="/login" element={!token ? <Login /> : <Navigate to="/dashboard" />} />
-            <Route path="/register" element={!token ? <Register /> : <Navigate to="/login" />} />
+            <Route path="/register" element={!token ? <Register /> : <Navigate to="/dashboard" />} />
+            <Route path="/complete-registration" element={!token ? <Register /> : <Navigate to="/dashboard" />} />
 
             {/* --- NOVAS ROTAS --- */}
             <Route path="/confirm-account" element={!token ? <ConfirmAccount /> : <Navigate to="/dashboard" />} />

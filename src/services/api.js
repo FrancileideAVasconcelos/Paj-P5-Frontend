@@ -65,6 +65,7 @@ export const UserService = {
     updateProfile: (data) => api.patch('/users/perfil', data),
 
     // --- NOVAS FUNÇÕES ---
+    completeRegistration: (token, data) => api.post('/users/complete-registration?token=' + encodeURIComponent(token), data),
     confirmAccount: (token) => api.post('/users/confirm?token=' + token, {}),
     forgotPassword: (email) => api.post('/users/forgot-password', { email }),
     resetPassword: (token, password) => api.post('/users/reset-password?token=' + token, { password })
@@ -72,6 +73,7 @@ export const UserService = {
 
 export const AdminService = {
 
+    inviteUser: (email) => api.post('/admin/users/invite', { email }),
     getAllUsers: () => api.get('/admin/users'),
     getUserClients: (username) => api.get(`/admin/users/${username}/clients`),
     getUserLeads: (username) => api.get(`/admin/users/${username}/leads`),
