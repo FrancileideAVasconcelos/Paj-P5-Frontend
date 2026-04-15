@@ -3,6 +3,7 @@ import '../styles/AsideFooterHeader.css';
 
 // 1. Recebemos a função 'fecharMenu' como propriedade
 export default function Aside({ fecharMenu }) {
+
     return (
         <nav className="sidebar">
             {/* 2. Adicionamos o onClick a cada Link */}
@@ -16,6 +17,10 @@ export default function Aside({ fecharMenu }) {
 
             <Link to="/client" onClick={fecharMenu}>
                 <button className="nav-btn"><i className="fa-solid fa-users"></i> Clientes</button>
+            </Link>
+
+            <Link to="/chat" onClick={fecharMenu}>
+                <button className="nav-btn"><i className="fa-solid fa-comment"></i> Chat</button>
             </Link>
 
             <Link to="/admin" onClick={fecharMenu}>

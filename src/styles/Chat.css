@@ -1,0 +1,30 @@
+/* src/styles/chat.css */
+.chat-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin: 20px auto;
+    max-width: 1000px;
+}
+
+.chat-sidebar div:hover {
+    background-color: #f1f3f5 !important;
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 3px;
+}
+
+.chat-input input:focus {
+    outline: none;
+    border-color: #007bff !important;
+}
+
+.chat-input button:hover {
+    background-color: #0056b3 !important;
+}

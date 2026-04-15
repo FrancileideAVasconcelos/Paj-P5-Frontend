@@ -66,9 +66,10 @@ export const UserService = {
 
     // --- NOVAS FUNÇÕES ---
     completeRegistration: (token, data) => api.post('/users/complete-registration?token=' + encodeURIComponent(token), data),
-    confirmAccount: (token) => api.post('/users/confirm?token=' + token, {}),
     forgotPassword: (email) => api.post('/users/forgot-password', { email }),
-    resetPassword: (token, password) => api.post('/users/reset-password?token=' + token, { password })
+    resetPassword: (token, password) => api.post('/users/reset-password?token=' + token, { password }),
+
+    getActiveUsers: () => api.get('/users/ativos'),
 }
 
 export const AdminService = {
@@ -112,3 +113,18 @@ export const LeadService = {
     update: (id, data) => api.patch(`/leads/${id}`, data),
     delete: (id) => api.delete(`/leads/${id}`),
 };
+
+
+export const ChatService = {
+    // Busca o histórico de mensagens com uma pessoa específica
+    getHistorico: (username) => api.get(`/chat/historico/${username}`),
+
+    // Envia uma nova mensagem via POST (REST)
+    enviarMensagem: (destinatarioUsername, conteudo) => api.post('/chat/send', { destinatarioUsername, conteudo }),
+
+    // Marca as mensagens daquela pessoa como lidas
+    marcarComoLidas: (username) => api.patch(`/chat/lidas/${username}`),
+
+    // Busca o número total de notificações não lidas
+    getUnreadCount: () => api.get('/chat/unread'),
+}

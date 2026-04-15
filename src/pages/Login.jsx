@@ -115,7 +115,6 @@ export default function Login() {
 
                     <div className="auth-links">
                         <p>Esqueceu a sua password? <Link to="/forgot-password">Recuperar aqui</Link></p>
-                        <p>Não tem conta? <Link to="/register">Registar</Link></p>
                     </div>
                 </form>
             </div>

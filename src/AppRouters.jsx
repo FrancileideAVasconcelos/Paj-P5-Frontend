@@ -10,9 +10,9 @@ import AdminUserDetails from "./components/AdminUserDetails.jsx";
 import LeadDetails from "./components/LeadDetails.jsx";
 import ClientDetails from "./components/ClientDetails.jsx";
 import useUserStore from "./store/useUserStore.js";
-import ConfirmAccount from './pages/ConfirmAccount.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
+import Chat from "./pages/Chat.jsx";
 
 
 export default function AppRoutes({ token }) {
@@ -28,8 +28,10 @@ export default function AppRoutes({ token }) {
             <Route path="/register" element={!token ? <Register /> : <Navigate to="/dashboard" />} />
             <Route path="/complete-registration" element={!token ? <Register /> : <Navigate to="/dashboard" />} />
 
+
+            <Route path="/chat" element={token ? <Chat /> : <Navigate to="/login" />} />
+
             {/* --- NOVAS ROTAS --- */}
-            <Route path="/confirm-account" element={!token ? <ConfirmAccount /> : <Navigate to="/dashboard" />} />
             <Route path="/forgot-password" element={!token ? <ForgotPassword /> : <Navigate to="/dashboard" />} />
             <Route path="/reset-password" element={!token ? <ResetPassword /> : <Navigate to="/dashboard" />} />
 

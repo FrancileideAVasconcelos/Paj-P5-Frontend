@@ -10,7 +10,9 @@ import { useNavigate, useLocation } from "react-router-dom"; // Importamos o hoo
 import useLeadStore from "../store/useLeadStore.js";
 import tokenStore from "../store/tokenStore.js";
 import useClientStore from "../store/useClientStore.js";
+import { ChatService } from '../services/api';
 import '../styles/Dashboard.css';
+import useUserStore from "../store/useUserStore.js";
 
 /**
  * Componente funcional que renderiza o painel de resumo do utilizador.
@@ -34,6 +36,8 @@ export default function Dashboard(){
     /** @type {string|undefined} Mensagem de erro (ex: acesso negado a admin) enviada via state. */
     const mensagemErro = location.state?.erro;
 
+    const setUnreadCount = useUserStore((state) => state.setUnreadCount);
+
     /**
      * Efeito de carregamento inicial: Procura os dados de leads e clientes
      * assim que o token de autenticação estiver disponível.
@@ -42,8 +46,13 @@ export default function Dashboard(){
         if (token) {
             fetchLeads(token); // Carrega a lista de leads
             fetchClient(token); // Carrega a lista de clientes
+
+            // --- NOVO: Vai buscar as notificações ao Java e guarda no Zustand ---
+            ChatService.getUnreadCount()
+                .then(res => setUnreadCount(res.count))
+                .catch(console.error);
         }
-    }, [token, fetchLeads, fetchClient]);
+    }, [token, fetchLeads, fetchClient, setUnreadCount]);
 
     /** @type {number} Cálculo do total de leads no estado. */
     const totalLeads = leads.length;

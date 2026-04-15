@@ -22,6 +22,10 @@ const useUserStore = create((set, get) => ({
      * Inicia como null.
      */
     currentUser: null,
+    unreadCount: 0, // --- NOVO ESTADO ---
+
+    setCurrentUser: (user) => set({ currentUser: user }),
+    setUnreadCount: (count) => set({ unreadCount: count }),
 
     /**
      * Procura o perfil do utilizador autenticado através do UserService.
