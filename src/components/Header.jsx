@@ -10,6 +10,7 @@ import '../styles/AsideFooterHeader.css'
 import tokenStore from "../store/tokenStore.js";
 import useUserStore from '../store/useUserStore.js';
 import {useNavigate} from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 
 /**
  * Componente funcional que renderiza a barra superior da interface.
@@ -20,6 +21,15 @@ import {useNavigate} from "react-router-dom";
  */
 export default function Header({ toggleMenu }) {
     const navigate = useNavigate();
+
+    // --- NOVO: Puxar traduções ---
+    const { t, i18n } = useTranslation();
+
+    // Função para trocar o idioma
+    const toggleLanguage = () => {
+        const nextLang = i18n.language === 'pt' ? 'en' : 'pt';
+        i18n.changeLanguage(nextLang);
+    };
 
     // --- ZUSTAND E TOKENS ---
     const currentUser = useUserStore((state) => state.currentUser);
@@ -75,11 +85,12 @@ export default function Header({ toggleMenu }) {
 
             {/* Secção de ações do utilizador, visível apenas se autenticado */}
             <div className="header-actions">
-                {/* Saudação personalizada utilizando o primeiro nome do utilizador */}
-                {token && <p>Bem-vindo, {currentUser ? currentUser.primeiroNome : '...'}</p>}
+
+                {/* Usa a tradução para o Bem-Vindo */}
+                {token && <p style={{ color: 'white', marginRight: '15px' }}>{t('header.welcome')}, {currentUser ? currentUser.primeiroNome : '...'}</p>}
 
                 {/* --- ÍCONE DO SINO COM NOTIFICAÇÕES --- */}
-                <div
+                {token && <div
                     onClick={() => navigate('/chat')}
                     style={{ position: 'relative', cursor: 'pointer', color: 'white', marginRight: '10px' }}
                     title="Ir para o Chat"
@@ -106,15 +117,22 @@ export default function Header({ toggleMenu }) {
                             {unreadCount > 99 ? '99+' : unreadCount}
                         </span>
                     )}
-                </div>
+                </div>}
                 {/* -------------------------------------- */}
 
 
-                {/* Link para a página de edição de perfil */}
-                {token && <div className="logout-btn" onClick={() => navigate('/profile')}>Meu Perfil</div>}
+                {token && <div className="logout-btn" onClick={() => navigate('/profile')}>{t('header.profile')}</div>}
+                {token && <div className="logout-btn" onClick={() => tokenStore.getState().logout()}>{t('header.logout')}</div>}
 
-                {/* Botão de encerramento de sessão */}
-                {token && <div className="logout-btn" onClick={() => tokenStore.getState().logout()}>Logout</div>}
+                {/* --- BOTÃO DE MUDAR IDIOMA --- */}
+                {token && <button
+                    onClick={toggleLanguage}
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '15px', marginRight: '15px', color: 'white' }}
+                    title="Mudar Idioma"
+                >
+                    {i18n.language === 'pt' ? 'EN' : 'PT'}
+                </button>}
+
             </div>
         </header>
     );

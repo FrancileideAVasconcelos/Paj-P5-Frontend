@@ -16,19 +16,18 @@ const apiRequest = async (endpoint, options = {}) => {
     try {
         const response = await fetch(`${BASE_URL}${endpoint}`, config);
 
-        // --- ALTERAÇÃO AQUI ---
-        if (response.status === 401) {
-            // Só faz logout automático se NÃO for a rota de login
+        // 1. Lemos a resposta PRIMEIRO como texto para podermos inspecionar
+        const text = await response.text();
+
+        // 2. Se o status for 401 OU se o Java mandar 409 com o texto '401'
+        if (response.status === 401 || (response.status === 409 && text.includes('401'))) {
             if (!endpoint.includes('/login')) {
                 tokenStore.getState().logout();
                 throw new Error("Sessão expirada.");
             }
         }
-        // ----------------------
 
-        // 1. Lemos a resposta primeiro como texto
-        const text = await response.text();
-
+        // 3. Outros erros gerais
         if (!response.ok) {
             throw new Error(text || `Erro: ${response.status}`);
         }

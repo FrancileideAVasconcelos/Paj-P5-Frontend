@@ -10,7 +10,7 @@
     background: var(--primary-color);
     color: var(--text-on-primary, white);
     padding: 0 30px; /* Reduzido o padding vertical para respeitar a altura */
-    height: var(--header-height, 90px); /* Usa a variável que criaste no index.css */
+    height: var(--header-height, 120px); /* Usa a variável que criaste no index.css */
     display: flex;
     justify-content: space-between;
     align-items: center;

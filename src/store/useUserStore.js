@@ -89,7 +89,7 @@ const useUserStore = create((set, get) => ({
      * Invocado durante o processo de logout para remover dados sensíveis da memória.
      * * @function clearUser
      */
-    clearUser: () => set({ currentUser: null })
+    clearUser: () => set({ currentUser: null, unreadCount: 0 }),
 }));
 
 export default useUserStore;

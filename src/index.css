@@ -21,7 +21,7 @@
     --color-danger: #e74c3c;               /* Vermelho para Logout/Erros */
 
     /* Medidas de Layout */
-    --header-height: 90px;                 /* Para controlares a altura do header */
+    --header-height: 120px;                 /* Para controlares a altura do header */
     --sidebar-width: 220px;
 }
 
