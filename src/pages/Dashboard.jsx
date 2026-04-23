@@ -13,6 +13,7 @@ import useClientStore from "../store/useClientStore.js";
 import { ChatService } from '../services/api';
 import '../styles/Dashboard.css';
 import useUserStore from "../store/useUserStore.js";
+import {useTranslation} from "react-i18next";
 
 /**
  * Componente funcional que renderiza o painel de resumo do utilizador.
@@ -37,6 +38,8 @@ export default function Dashboard(){
     const mensagemErro = location.state?.erro;
 
     const setUnreadCount = useUserStore((state) => state.setUnreadCount);
+
+    const { t, i18n } = useTranslation();
 
     /**
      * Efeito de carregamento inicial: Procura os dados de leads e clientes
@@ -68,7 +71,7 @@ export default function Dashboard(){
                 </div>
             )}
             <div className="dashboard-container">
-                <h2 className="dashboard-title">Painel de Resumo</h2>
+                <h2 className="dashboard-title">{t('dashboard.title')}</h2>
 
                 <div className="stats-grid">
                     {/* Cartão estatístico clicável que redireciona para a página de Leads */}
@@ -76,14 +79,14 @@ export default function Dashboard(){
                         className="stat-card clickable"
                         onClick={() => navigate('/leads')}
                     >
-                        <h3>Total de leads</h3>
+                        <h3>{t('dashboard.total_leads')}</h3>
                         <p className="stat-number">{totalLeads}</p>
                     </div>
 
                     {/* Cartão estatístico clicável que redireciona para a página de Clientes */}
                     <div  className="stat-card clickable"
                           onClick={() => navigate('/client')}>
-                        <h3>Total de clientes</h3>
+                        <h3>{t('dashboard.total_clients')}</h3>
                         <p className="stat-number">{totalClients}</p>
                     </div>
                 </div>

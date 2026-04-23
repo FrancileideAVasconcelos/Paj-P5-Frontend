@@ -11,6 +11,7 @@ import { api } from '../services/api';
 import { Link } from 'react-router-dom';
 import '../styles/loginRegister.css';
 import useUserStore from "../store/useUserStore.js";
+import {useTranslation} from "react-i18next";
 
 /**
  * Componente funcional para renderização da interface de Login.
@@ -18,6 +19,8 @@ import useUserStore from "../store/useUserStore.js";
  * @returns {JSX.Element} A página de login com campos de credenciais.
  */
 export default function Login() {
+
+    const { t, i18n } = useTranslation();
 
     /** @type {string} Estado local para o nome de utilizador inserido. */
     const [username, setUsername] = useState('');
@@ -88,7 +91,7 @@ export default function Login() {
 
                 <form onSubmit={handleLogin} className="custom-form">
                     <div className="form-group">
-                        <label>Username</label>
+                        <label>{t('login.username')}</label>
                         <input
                             type="text"
                             value={username}
@@ -98,7 +101,7 @@ export default function Login() {
                     </div>
 
                     <div className="form-group">
-                        <label>Password</label>
+                        <label>{t('login.pass')}</label>
                         <input
                             type="password"
                             value={password}
@@ -109,12 +112,12 @@ export default function Login() {
 
                     <div className="form-actions" style={{ marginTop: '10px' }}>
                         <button className="btn-auth" type="submit">
-                            Entrar
+                            {t('login.entrar')}
                         </button>
                     </div>
 
                     <div className="auth-links">
-                        <p>Esqueceu a sua password? <Link to="/forgot-password">Recuperar aqui</Link></p>
+                        <p>{t('login.esqueceu_pass')} <Link to="/forgot-password">{t('login.recup_pass')}</Link></p>
                     </div>
                 </form>
             </div>

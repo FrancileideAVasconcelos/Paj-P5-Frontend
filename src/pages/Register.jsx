@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { UserService } from '../services/api';
 import '../styles/loginRegister.css';
+import {useTranslation} from "react-i18next";
 
 export default function Register() {
     const [searchParams] = useSearchParams();
@@ -20,16 +21,17 @@ export default function Register() {
     const [sucesso, setSucesso] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const { t, i18n } = useTranslation();
+
     // SE NÃO HOUVER TOKEN: Bloqueia a página de registo!
     if (!token) {
         return (
             <div className="login-page-container">
                 <div className="login-container" style={{ textAlign: 'center' }}>
-                    <h2>Acesso Restrito</h2>
+                    <h2>{t('registo.aviso')}</h2>
                     <p style={{ color: '#e74c3c', fontWeight: 'bold', margin: '20px 0' }}>
-                        O registo nesta plataforma é feito exclusivamente por convite do Administrador.
-                    </p>
-                    <Link to="/login" className="btn-auth">Voltar ao Login</Link>
+                        {t('registo.info')}                    </p>
+                    <Link to="/login" className="btn-auth">{t('registo.redirecionamento')}</Link>
                 </div>
             </div>
         );
@@ -47,10 +49,10 @@ export default function Register() {
 
         try {
             await UserService.completeRegistration(token, formData);
-            setSucesso("Conta ativada com sucesso! A redirecionar para o login...");
+            setSucesso(t('registo.sucesso'));
             setTimeout(() => navigate('/login'), 3000);
         } catch (error) {
-            setErro(error.message || "Erro: O link de convite é inválido ou já expirou.");
+            setErro(error.message || t('registo.erro'));
         } finally {
             setLoading(false);
         }
@@ -59,45 +61,44 @@ export default function Register() {
     return (
         <div className="login-page-container">
             <div className="login-container">
-                <h2>Completar Registo</h2>
+                <h2>{t('registo.title')}</h2>
                 <p style={{ textAlign: 'center', marginBottom: '20px', fontSize: '14px', color: '#666' }}>
-                    Bem-vindo! Preencha os seus dados pessoais para ativar a sua nova conta.
+                    {t('registo.saudacao')}
                 </p>
 
                 {erro && <p style={{ color: '#e74c3c', textAlign: 'center', fontWeight: 'bold' }}>{erro}</p>}
                 {sucesso && <p style={{ color: '#27ae60', textAlign: 'center', fontWeight: 'bold' }}>{sucesso}</p>}
 
                 <form onSubmit={handleSubmeter} className="custom-form">
-                    {/* Reparaste? Não há campo "E-mail" aqui! O Java já o guardou através do token. */}
 
                     <div className="form-group">
-                        <label>Username</label>
+                        <label>{t('registo.username')}</label>
                         <input type="text" name="username" value={formData.username} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
-                        <label>Password</label>
+                        <label>{t('registo.pass')}</label>
                         <input type="password" name="password" value={formData.password} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
-                        <label>Primeiro Nome</label>
+                        <label>{t('registo.primeiro')}</label>
                         <input type="text" name="primeiroNome" value={formData.primeiroNome} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
-                        <label>Último Nome</label>
+                        <label>{t('registo.ultimo')}</label>
                         <input type="text" name="ultimoNome" value={formData.ultimoNome} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
-                        <label>Telefone</label>
+                        <label>{t('registo.telefone')}</label>
                         <input type="text" name="telefone" value={formData.telefone} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
-                        <label>URL da Foto (Opcional)</label>
+                        <label>{t('registo.url')}</label>
                         <input type="text" name="fotoUrl" value={formData.fotoUrl} onChange={handleChange} />
                     </div>
 
                     <div className="form-actions">
                         <button type="submit" className="btn-auth" disabled={loading}>
-                            {loading ? 'A processar...' : 'Ativar a minha conta'}
+                            {loading ? t('registo.processar') : t('registo.ativar')}
                         </button>
                     </div>
                 </form>

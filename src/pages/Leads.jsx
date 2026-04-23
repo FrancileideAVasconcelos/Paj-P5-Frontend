@@ -12,6 +12,7 @@ import { STATUS_OPTIONS } from "../utils/constants.js";
 import FormModal from "../components/formModal.jsx";
 import useFormModal from "../hooks/useFormModal.js";
 import '../styles/ClientLead.css';
+import {useTranslation} from "react-i18next";
 
 /**
  * Componente funcional para visualização e filtragem da lista de leads.
@@ -34,6 +35,8 @@ export default function Leads() {
      * @type {Object}
      */
     const modalProps = useFormModal(addLead, updateLead, token);
+
+    const { t, i18n } = useTranslation();
 
     /**
      * Efeito de carregamento: Procura as leads sempre que o token ou o filtro mudarem.
@@ -61,27 +64,28 @@ export default function Leads() {
     return (
         <div className="admin-container">
             <div className="barra-container">
-                <h2>Gestão de Leads</h2>
+                <h2>{t('leads.title')}</h2>
                 {/* Abre o modal configurado para criação de um novo registo */}
                 <button type="button" className="btn-save" onClick={() => modalProps.abrirParaCriar({ titulo: '', descricao: '', estado: 0 })}>
-                    <i className="fa-solid fa-plus"></i> Adicionar Lead
+                    <i className="fa-solid fa-plus"></i> {t('leads.add')}
                 </button>
             </div>
 
             <div className="filtros">
-                <label>Filtrar por estado: </label>
+                <label>{t('leads.filtrar')}</label>
                 <select value={filtro} onChange={(e) => setFiltro(e.target.value)} style={{ padding: '8px', marginLeft: '10px', borderRadius: '5px' }}>
-                    <option value="">Todos os Estados</option>
-                    {/* Renderiza as opções de estado baseadas nas constantes globais */}
-                    {STATUS_OPTIONS.map((nome, idx) => (
-                        <option key={idx} value={idx}>{nome}</option>
+                    <option value="">{t('leads.filtro_todos')}</option>
+                    {STATUS_OPTIONS.map((opcao) => (
+                        <option key={opcao.id} value={opcao.id}>
+                            {t(opcao.key)} {/* AQUI A MAGIA ACONTECE */}
+                        </option>
                     ))}
                 </select>
             </div>
 
             {/* Exibição condicional: Spinner de carregamento ou lista de dados */}
             {loading ? (
-                <div className="loading-state"><p>A carregar leads...</p></div>
+                <div className="loading-state"><p>{t('leads.carregar')}</p></div>
             ) : (
                 <div className="data-list">
                     {leads.map((lead) => (

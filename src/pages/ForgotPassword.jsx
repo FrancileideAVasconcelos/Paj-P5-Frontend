@@ -15,9 +15,9 @@ export default function ForgotPassword() {
 
         try {
             await UserService.forgotPassword(email);
-            setMensagem("Se o email existir na nossa base de dados, receberá um link de recuperação.");
+            setMensagem(t('login.mensagem_link'));
         } catch (error) {
-            setMensagem("Ocorreu um erro ao tentar processar o pedido.");
+            setMensagem(t('login.mensagem_erro'));
         } finally {
             setLoading(false);
         }
@@ -26,25 +26,25 @@ export default function ForgotPassword() {
     return (
         <div className="login-page-container">
             <div className="login-container">
-                <h2>Recuperar Password</h2>
+                <h2>{t('login.recup_title')}</h2>
                 <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px', textAlign: 'center' }}>
-                    Insira o seu e-mail e enviar-lhe-emos instruções.
+                    {t('login.inserir_email ')}
                 </p>
 
                 {mensagem && <p style={{ color: '#27ae60', textAlign: 'center', fontWeight: 'bold' }}>{mensagem}</p>}
 
                 <form onSubmit={handleSubmeter} className="custom-form">
                     <div className="form-group">
-                        <label>E-mail da sua conta</label>
+                        <label>{t('login.email')}</label>
                         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                     </div>
                     <div className="form-actions">
                         <button type="submit" className="btn-auth" disabled={loading}>
-                            {loading ? 'A enviar...' : 'Enviar Link'}
+                            {loading ? t('login.enviar') : t('login.link')}
                         </button>
                     </div>
                     <div className="auth-links">
-                        <Link to="/login">Voltar ao Login</Link>
+                        <Link to="/login">{t('login.voltar')}</Link>
                     </div>
                 </form>
             </div>

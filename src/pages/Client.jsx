@@ -12,6 +12,7 @@ import useClientStore from "../store/useClientStore.js";
 import FormModal from '../components/formModal.jsx';
 import useFormModal from "../hooks/useFormModal.js";
 import '../styles/ClientLead.css';
+import {useTranslation} from "react-i18next";
 
 /**
  * Componente funcional que renderiza a interface de gestão de clientes.
@@ -35,6 +36,8 @@ export default function Client(){
      */
     const modalProps = useFormModal(addClient, updateClient, token);
 
+    const { t, i18n } = useTranslation();
+
     /**
      * Efeito de carregamento inicial: Procura a lista de clientes no servidor
      * sempre que o componente é montado ou o token/função de fetch mudam.
@@ -47,19 +50,19 @@ export default function Client(){
         <div className="admin-container">
             {/* Cabeçalho da página com título e ação de criação */}
             <div className="barra-container">
-                <h2>Gestão de Clientes</h2>
+                <h2>{t('clients.title')}</h2>
                 <button
                     type="button"
                     className="btn-save"
                     onClick={() => modalProps.abrirParaCriar({ nome: '', email: '', telefone: '', empresa: '' })}
                 >
-                    <i className="fa-solid fa-plus"></i> Adicionar Cliente
+                    <i className="fa-solid fa-plus"></i>{t('clients.add')}
                 </button>
             </div>
 
             {/* Renderização condicional: Exibe feedback de carregamento ou a lista de clientes */}
             {loading ? (
-                <div className="loading-state"><p>A carregar clientes...</p></div>
+                <div className="loading-state"><p>{t('clients.carregar')}</p></div>
             ) : (
                 <div className="data-list">
                     {/* Mapeia o array de clientes para gerar os itens clicáveis da lista */}

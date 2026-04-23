@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useUserStore from '../store/useUserStore.js';
 import tokenStore from '../store/tokenStore.js';
+import {useTranslation} from "react-i18next";
 
 /**
  * Componente funcional que gere o formulário de perfil.
@@ -19,6 +20,8 @@ export default function Profile() {
     const navigate = useNavigate();
     /** @type {string|null} Token de sessão obtido da store de autenticação. */
     const token = tokenStore((state) => state.token);
+
+    const { t, i18n } = useTranslation();
 
     // --- ESTADO GLOBAL (Zustand) ---
     const {
@@ -167,7 +170,7 @@ export default function Profile() {
         <div className="main-content">
             <div className="form-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
 
-                <h2 className="form-title">O Meu Perfil</h2>
+                <h2 className="form-title">{t('profile.title')}</h2>
 
                 {/* Bloco de alertas para feedback visual */}
                 {mensagem.texto && (
@@ -190,66 +193,66 @@ export default function Profile() {
                             onError={(e) => { e.target.src = defaultAvatar; }}
                         />
                         <div className="form-group" style={{ width: '100%', marginTop: '15px' }}>
-                            <label>URL da Foto de Perfil</label>
-                            <input type="text" name="fotoUrl" value={formData.fotoUrl} onChange={handleFormChange} placeholder="Ex: https://link-da-imagem.com/foto.jpg" />
+                            <label>{t('profile.url')}</label>
+                            <input type="text" name="fotoUrl" value={formData.fotoUrl} onChange={handleFormChange} placeholder={t('profile.placeholder_url')} />
                         </div>
                     </div>
 
                     <hr style={{ border: '1px solid #eee', marginBottom: '20px' }}/>
 
-                    <h3 style={{ marginBottom: '15px', color: '#333' }}>Dados Pessoais</h3>
+                    <h3 style={{ marginBottom: '15px', color: '#333' }}>{t('profile.dados_pessoais')}</h3>
 
                     <div className="form-group">
-                        <label>Username (Não editável)</label>
+                        <label>{t('profile.username')}</label>
                         <input type="text" value={formData.username} disabled style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }} />
                     </div>
 
                     <div className="form-row" style={{ display: 'flex', gap: '15px' }}>
                         <div className="form-group" style={{ flex: 1 }}>
-                            <label>Primeiro Nome *</label>
+                            <label>{t('profile.primeiro')}</label>
                             <input type="text" name="primeiroNome" value={formData.primeiroNome} onChange={handleFormChange} required />
                         </div>
                         <div className="form-group" style={{ flex: 1 }}>
-                            <label>Último Nome *</label>
+                            <label>{t('profile.ultimo')}</label>
                             <input type="text" name="ultimoNome" value={formData.ultimoNome} onChange={handleFormChange} required />
                         </div>
                     </div>
 
                     <div className="form-row" style={{ display: 'flex', gap: '15px' }}>
                         <div className="form-group" style={{ flex: 1 }}>
-                            <label>Email *</label>
+                            <label>{t('profile.email')}</label>
                             <input type="email" name="email" value={formData.email} onChange={handleFormChange} required />
                         </div>
                         <div className="form-group" style={{ flex: 1 }}>
-                            <label>Telefone</label>
+                            <label>{t('profile.telefone')}</label>
                             <input type="text" name="telefone" value={formData.telefone} onChange={handleFormChange} />
                         </div>
                     </div>
 
                     <hr style={{ border: '1px solid #eee', margin: '20px 0' }}/>
 
-                    <h3 style={{ marginBottom: '15px', color: '#333' }}>Segurança e Validação</h3>
-                    <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>Confirme a sua identidade para guardar as alterações.</p>
+                    <h3 style={{ marginBottom: '15px', color: '#333' }}>{t('profile.seguranca')}</h3>
+                    <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>{t('profile.confirmacao')}</p>
 
                     <div className="form-group">
-                        <label>Password Atual (Obrigatório) *</label>
-                        <input type="password" name="atual" value={passwords.atual} onChange={handlePassChange} placeholder="Digite a sua password atual" required />
+                        <label>{t('profile.pass_atual')}</label>
+                        <input type="password" name="atual" value={passwords.atual} onChange={handlePassChange} placeholder={t('profile.placeholder_passatual')} required />
                     </div>
 
                     <div className="form-row" style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
                         <div className="form-group" style={{ flex: 1 }}>
-                            <label>Nova Password (Opcional)</label>
-                            <input type="password" name="nova" value={passwords.nova} onChange={handlePassChange} placeholder="Deixe em branco para manter a atual" />
+                            <label>{t('profile.pass_nova')}</label>
+                            <input type="password" name="nova" value={passwords.nova} onChange={handlePassChange} placeholder={t('profile.placeholder_passnova')} />
                         </div>
                         <div className="form-group" style={{ flex: 1 }}>
-                            <label>Confirmar Nova Password</label>
-                            <input type="password" name="confirmar" value={passwords.confirmar} onChange={handlePassChange} placeholder="Repita a nova password" />
+                            <label>{t('profile.confirmar_passnova')}</label>
+                            <input type="password" name="confirmar" value={passwords.confirmar} onChange={handlePassChange} placeholder={t('profile.placeholder_confirma_passnova')} />
                         </div>
                     </div>
 
                     <div className="form-actions" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
                         <button type="submit" className="btn-save" disabled={loading}>
-                            {loading ? 'A Guardar...' : 'Guardar Perfil'}
+                            {loading ? t('profile.guardar') : t('profile.guardar_perfil')}
                         </button>
                     </div>
                 </form>
