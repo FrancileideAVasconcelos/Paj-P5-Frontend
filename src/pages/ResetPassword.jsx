@@ -39,13 +39,13 @@ export default function ResetPassword() {
     return (
         <div className="login-page-container">
             <div className="login-container">
-                <h2>{t('login.pass')}</h2>
+                <h2>{t('login.pass_nova')}</h2>
                 {erro && <p style={{ color: '#e74c3c', textAlign: 'center', fontWeight: 'bold' }}>{erro}</p>}
                 {sucesso && <p style={{ color: '#27ae60', textAlign: 'center', fontWeight: 'bold' }}>{sucesso}</p>}
 
                 <form onSubmit={handleSubmeter} className="custom-form">
                     <div className="form-group">
-                        <label>{t('login.pass')}</label>
+                        <label>{t('geral.pass')}</label>
                         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
                     <div className="form-group">

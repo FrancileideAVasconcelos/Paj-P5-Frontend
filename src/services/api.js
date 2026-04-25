@@ -23,7 +23,7 @@ const apiRequest = async (endpoint, options = {}) => {
         if (response.status === 401 || (response.status === 409 && text.includes('401'))) {
             if (!endpoint.includes('/login')) {
                 tokenStore.getState().logout();
-                throw new Error("Sessão expirada.");
+                throw new Error('geral.sessao_expirada');
             }
         }
 

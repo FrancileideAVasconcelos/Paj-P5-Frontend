@@ -123,3 +123,11 @@
     color: var(--primary-dark);
     text-decoration: underline;
 }
+
+/* --- RESPONSIVIDADE PARA FORMULÁRIOS E PERFIL --- */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0; /* Remove o gap porque o margin-bottom do form-group já atua */
+    }
+}

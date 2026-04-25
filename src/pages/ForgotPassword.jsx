@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { UserService } from '../services/api';
 import '../styles/loginRegister.css';
+import {useTranslation} from "react-i18next";
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState('');
     const [mensagem, setMensagem] = useState('');
     const [loading, setLoading] = useState(false);
+    const { t, i18n } = useTranslation();
 
     const handleSubmeter = async (e) => {
         e.preventDefault();
@@ -28,7 +30,7 @@ export default function ForgotPassword() {
             <div className="login-container">
                 <h2>{t('login.recup_title')}</h2>
                 <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px', textAlign: 'center' }}>
-                    {t('login.inserir_email ')}
+                    {t('login.inserir_email')}
                 </p>
 
                 {mensagem && <p style={{ color: '#27ae60', textAlign: 'center', fontWeight: 'bold' }}>{mensagem}</p>}

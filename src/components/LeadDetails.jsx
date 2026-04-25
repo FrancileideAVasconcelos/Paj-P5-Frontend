@@ -13,6 +13,7 @@ import { STATUS_OPTIONS } from '../utils/constants.js';
 import useFormModal from "../hooks/useFormModal.js";
 import FormModal from "./formModal.jsx";
 import '../styles/ClientLead.css';
+import {useTranslation} from "react-i18next";
 
 /**
  * Componente funcional que exibe os detalhes de uma Lead.
@@ -22,6 +23,8 @@ import '../styles/ClientLead.css';
 export default function LeadDetails() {
     /** @type {string} ID da lead extraído dos parâmetros da URL. */
     const { id } = useParams();
+
+    const { t, i18n } = useTranslation();
 
     /** @type {Function} Hook para navegação entre rotas. */
     const navigate = useNavigate();
@@ -55,44 +58,44 @@ export default function LeadDetails() {
      * @returns {Promise<void>}
      */
     const handleRemover = async () => {
-        if (window.confirm("Tem a certeza que deseja remover esta lead?")) {
+        if (window.confirm(t('leads.detalhes.confirm_remover'))) {
             const sucesso = await softDeleteLead(token, id);
             if (sucesso) {
-                alert("Lead removida!");
+                alert(t('leads.detalhes.alerta'));
                 navigate('/leads');
             }
         }
     };
 
     // --- RENDERIZAÇÃO CONDICIONAL DE ESTADOS DE CARREGAMENTO E ERRO ---
-    if (loading) return <div className="loading-state"><p>A carregar...</p></div>;
-    if (!currentLead) return <div className="no-data"><p>Lead não encontrada.</p></div>;
+    if (loading) return <div className="loading-state"><p>{t('leads.detalhes.carregar')}</p></div>;
+    if (!currentLead) return <div className="no-data"><p>{t('leads.detalhes.lead_n_encontrada')}</p></div>;
 
     return (
         <div className="admin-container">
             {/* Botão de navegação para retornar à listagem de leads */}
             <button className="btn-back" onClick={() => navigate('/leads')}>
-                <i className="fa-solid fa-arrow-left"></i> Voltar à Lista
+                <i className="fa-solid fa-arrow-left"></i> {t('leads.detalhes.voltar')}
             </button>
 
             <div className="form-container">
-                <h3 className="form-title">Detalhes da Lead</h3>
+                <h3 className="form-title">{t('leads.detalhes.titulo_pag')}</h3>
                 <div className="custom-form">
                     {/* Exibição estática dos dados da Lead */}
                     <div className="form-group">
-                        <label>Título</label>
+                        <label>{t('leads.detalhes.label_titulo')}</label>
                         <p className="static-data">{currentLead.titulo}</p>
                     </div>
 
                     <div className="form-group">
-                        <label>Descrição / Notas</label>
+                        <label>{t('leads.detalhes.label_descricao')}</label>
                         <p className="static-data" style={{ whiteSpace: 'pre-wrap' }}>
                             {currentLead.descricao || "Sem notas adicionais."}
                         </p>
                     </div>
 
                     <div className="form-group">
-                        <label>Estado</label>
+                        <label>{t('leads.detalhes.estado')}</label>
                         <div className="static-data-badge">
                             {/* Badge dinâmica baseada no estado da lead definida nas constantes */}
                             <span className={`badge status-${currentLead.estado}`}>
@@ -102,7 +105,7 @@ export default function LeadDetails() {
                     </div>
 
                     <div className="form-group">
-                        <label>Data de Registo</label>
+                        <label>{t('leads.detalhes.label_data')}</label>
                         <p className="static-data">
                             {new Date(currentLead.dataCriacao).toLocaleDateString('pt-PT')}
                         </p>
@@ -111,10 +114,10 @@ export default function LeadDetails() {
                     {/* Ações de Gestão da Lead */}
                     <div className="form-actions">
                         <button onClick={(e) => modalProps.abrirParaEditar(e, currentLead)} className="btn-save">
-                            <i className="fa-solid fa-pen"></i> Editar Detalhes
+                            <i className="fa-solid fa-pen"></i> {t('leads.detalhes.btn_editar')}
                         </button>
                         <button onClick={handleRemover} className="btn-save-red">
-                            <i className="fa-solid fa-trash-can"></i> Remover Lead
+                            <i className="fa-solid fa-trash-can"></i> {t('leads.detalhes.btn_remover')}
                         </button>
                     </div>
                 </div>

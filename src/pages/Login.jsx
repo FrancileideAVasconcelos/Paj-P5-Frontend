@@ -63,7 +63,7 @@ export default function Login() {
                 // Força a atualização dos dados do utilizador na store de perfil
                 await useUserStore.getState().fetchCurrentUser();
             } else {
-                setErro('Resposta do servidor inválida.');
+                setErro(t('login.erro_servidor'));
             }
 
         } catch (err) {
@@ -75,7 +75,7 @@ export default function Login() {
     return (
         <div className="login-page-container">
             <div className="login-container">
-                <h2>Login</h2>
+                <h2>{t('login.entrar')}</h2>
 
                 {/* Área de exibição de erros críticos */}
                 {erro && (
@@ -91,7 +91,7 @@ export default function Login() {
 
                 <form onSubmit={handleLogin} className="custom-form">
                     <div className="form-group">
-                        <label>{t('login.username')}</label>
+                        <label>{t('geral.username')}</label>
                         <input
                             type="text"
                             value={username}
@@ -101,7 +101,7 @@ export default function Login() {
                     </div>
 
                     <div className="form-group">
-                        <label>{t('login.pass')}</label>
+                        <label>{t('geral.pass')}</label>
                         <input
                             type="password"
                             value={password}

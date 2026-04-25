@@ -6,6 +6,7 @@
 
 import '../styles/Admin.css'
 import React from 'react';
+import {useTranslation} from "react-i18next";
 
 /**
  * Componente de lista administrativa para Clientes e Leads.
@@ -36,6 +37,8 @@ export default function ListClientLeadAdmin({
     const nomesDosEstados = {
         0: "Novo", 1: "Em análise", 2: "Proposta", 3: "Ganho", 4: "Perdido"
     };
+    const { t } = useTranslation();
+
 
     return (
         <div className={`data-card ${cardClass || ''}`}>
@@ -48,16 +51,16 @@ export default function ListClientLeadAdmin({
                 </div>
 
                 <div className="data-card-actions">
-                    <button className="icon-btn green-btn" title="Reativar Todos" onClick={onReactivateAll} ><i className="fa-solid fa-folder-open"></i></button>
-                    <button className="icon-btn orange-btn" title="Inativar Todos" onClick={onInactivateAll}><i className="fa-solid fa-ban"></i></button>
-                    <button className="icon-btn red-btn" title="Excluir Definitivamente Todos" onClick={onDeleteAll}><i className="fa-solid fa-fire"></i></button>
+                    <button className="icon-btn green-btn" title={t('admin.lista.reativar_todos')} onClick={onReactivateAll} ><i className="fa-solid fa-folder-open"></i></button>
+                    <button className="icon-btn orange-btn" title={t('admin.lista.inativar_todos')} onClick={onInactivateAll}><i className="fa-solid fa-ban"></i></button>
+                    <button className="icon-btn red-btn" title={t('admin.lista.excluir_todos')} onClick={onDeleteAll}><i className="fa-solid fa-fire"></i></button>
                 </div>
             </div>
 
             {/* CONTEÚDO DO CARTÃO: Lista de itens ou mensagem de lista vazia */}
             <div className="data-card-content">
                 {(!data || data.length === 0) ? (
-                    <p className="empty-text">Nenhum(a) {title.toLowerCase()} encontrado(a).</p>
+                    <p className="empty-text">{t('admin.lista.vazia', { tipo: title.toLowerCase() })}</p>
                 ) : (
                     <ul className="data-list">
                         {data.map(item => (
@@ -78,20 +81,20 @@ export default function ListClientLeadAdmin({
                                     {/* INDICADOR DE INATIVIDADE: Badge visível apenas se o item não estiver ativo */}
                                     {!item.ativo && (
                                         <span style={{ backgroundColor: '#d9534f', color: 'white', padding: '3px 8px', borderRadius: '12px', fontSize: '11px', marginLeft: '10px', fontWeight: 'bold' }}>
-                                            <i className="fa-solid fa-ban"></i> Inativo
+                                            <i className="fa-solid fa-ban"></i> {t('admin.lista.inativo')}
                                         </span>
                                     )}
                                 </div>
 
                                 {/* BOTÕES DE AÇÃO INDIVIDUAIS */}
                                 <div className="action-buttons">
-                                    <button className="icon-btn" title="Editar" onClick={() => onEdit && onEdit(item)}>
+                                    <button className="icon-btn" title={t('admin.lista.editar')} onClick={() => onEdit && onEdit(item)}>
                                         <i className="fa-solid fa-pen"></i>
                                     </button>
-                                    <button className="icon-btn orange-btn" title={item.ativo ? "Inativar" : "Reativar"} onClick={() => onToggleActive && onToggleActive(item)}>
+                                    <button className="icon-btn orange-btn" title={item.ativo ? t('admin.lista.inativar') : t('admin.lista.reativar')} onClick={() => onToggleActive && onToggleActive(item)}>
                                         <i className={`fa-solid ${item.ativo ? 'fa-ban' : 'fa-folder-open'}`}></i>
                                     </button>
-                                    <button className="icon-btn red-btn" title="Excluir" onClick={() => onDelete && onDelete(item)}>
+                                    <button className="icon-btn red-btn" title={t('admin.lista.excluir')} onClick={() => onDelete && onDelete(item)}>
                                         <i className="fa-solid fa-trash"></i>
                                     </button>
                                 </div>

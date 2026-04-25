@@ -13,6 +13,7 @@ import { AdminService } from '../services/api';
 
 import '../styles/ClientLead.css';
 import '../styles/Admin.css';
+import {useTranslation} from "react-i18next";
 
 /**
  * Componente funcional que renderiza o painel de gestão de utilizadores.
@@ -34,6 +35,8 @@ export default function Admin() {
     const [inviteEmail, setInviteEmail] = useState('');
     const [inviteMsg, setInviteMsg] = useState({ texto: '', tipo: '' });
     const [loadingInvite, setLoadingInvite] = useState(false);
+
+    const { t, i18n } = useTranslation();
 
     /**
      * Efeito de carregamento: Procura a lista de utilizadores no servidor assim que o componente é montado.
@@ -65,10 +68,10 @@ export default function Admin() {
 
         try {
             await AdminService.inviteUser(inviteEmail);
-            setInviteMsg({ texto: 'Convite enviado com sucesso para o MailHog!', tipo: 'sucesso' });
+            setInviteMsg({ texto: t('admin.inviteMsg'), tipo: 'sucesso' });
             setInviteEmail(''); // Limpa o campo
         } catch (error) {
-            setInviteMsg({ texto: error.message || 'Erro ao enviar convite.', tipo: 'erro' });
+            setInviteMsg({ texto: error.message || t('admin.erroMsg'), tipo: 'erro' });
         } finally {
             setLoadingInvite(false);
         }
@@ -79,22 +82,22 @@ export default function Admin() {
 
     return (
         <div className="admin-container">
-            <h2 className="admin-title">Gestão de Utilizadores</h2>
+            <h2 className="admin-title">{t('admin.title')}</h2>
 
             {/* --- NOVA SECÇÃO DE CONVITE --- */}
             <div className="invite-section" style={{ background: '#f8f9fa', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
-                <h3>Convidar Novo Utilizador</h3>
+                <h3>{t('admin.convidar')}</h3>
                 <form onSubmit={handleConvidar} style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px' }}>
                     <input
                         type="email"
-                        placeholder="E-mail do novo utilizador"
+                        placeholder={t('admin.placeholder_email')}
                         value={inviteEmail}
                         onChange={(e) => setInviteEmail(e.target.value)}
                         required
                         style={{ padding: '10px', width: '100%', borderRadius: '4px', border: '1px solid #ccc' }}
                     />
                     <button type="submit" className="btn-auth" disabled={loadingInvite} style={{ margin: 0 }}>
-                        {loadingInvite ? 'A enviar...' : 'Enviar Convite'}
+                        {loadingInvite ? t('admin.enviando') : t('admin.enviar_convite')}
                     </button>
                 </form>
                 {inviteMsg.texto && (
@@ -110,7 +113,7 @@ export default function Admin() {
 
             {/* Renderização condicional: Feedback de carregamento ou lista de cartões */}
             {loading ? (
-                <p className="loading-text">A carregar utilizadores...</p>
+                <p className="loading-text">{t('admin.carregar_utilizadores')}</p>
             ) : (
                 <div className="users-list">
                     {/* Mapeia os utilizadores ordenados para criar a interface de cartões */}
@@ -131,7 +134,7 @@ export default function Admin() {
                                     <h3>
                                         {user.primeiroNome} {user.ultimoNome}
                                         {/* Exibição condicional do badge de administrador */}
-                                        {user.admin && <span className="admin-badge"><i className="fa-solid fa-crown"></i> Admin</span>}
+                                        {user.admin && <span className="admin-badge"><i className="fa-solid fa-crown"></i> {t('admin.detalhes.admin_tag')}</span>}
                                     </h3>
                                     <p>@{user.username} | {user.email}</p>
                                 </div>
@@ -140,7 +143,7 @@ export default function Admin() {
                             {/* Indicador visual de conta ativa ou inativa */}
                             <div className="user-actions">
                                 <span className={`status-badge ${user.ativo ? 'badge-active' : 'badge-inactive'}`}>
-                                    {user.ativo ? 'Ativo' : 'Inativo'}
+                                    {user.ativo ? t('admin.ativo') : t('admin.inativo')}
                                 </span>
                             </div>
                         </div>
@@ -148,7 +151,7 @@ export default function Admin() {
 
                     {/* Mensagem de fallback para listas vazias */}
                     {sortedUsers.length === 0 && !loading && (
-                        <p className="empty-list-text">Nenhum utilizador encontrado.</p>
+                        <p className="empty-list-text">{t('admin.lista_vazia')}</p>
                     )}
                 </div>
             )}

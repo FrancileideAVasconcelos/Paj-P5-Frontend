@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import {useTranslation} from "react-i18next";
 
 /**
  * Hook para gestão de modais de criação/edição.
@@ -15,6 +16,8 @@ import { useState } from 'react';
  * @returns {Object} Objeto contendo estados e funções de controlo do modal.
  */
 export default function useFormModal(addFunction, updateFunction, token) {
+    const { t } = useTranslation();
+
     /** @type {boolean} Estado que controla a visibilidade do modal. */
     const [modalAberto, setModalAberto] = useState(false);
 

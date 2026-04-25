@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import useUserStore from "../store/useUserStore.js";
 import { ChatService, UserService } from '../services/api'; // Certifica-te que tens um endpoint para listar utilizadores!
-import '../styles/chat.css'; // Vamos criar este CSS a seguir se quiseres
+import '../styles/chat.css';
+import {useTranslation} from "react-i18next";
 
 export default function Chat() {
     const [utilizadores, setUtilizadores] = useState([]);
@@ -11,6 +12,8 @@ export default function Chat() {
     const ws = useRef(null); // Guarda a ligação do WebSocket
     const mensagensFimRef = useRef(null); // Para fazer scroll automático para o fundo
     const setUnreadCount = useUserStore((state) => state.setUnreadCount);
+
+    const { t, i18n } = useTranslation();
 
     // 1. Ao abrir a página, vai buscar a lista de pessoas para falar e LIGA O WEBSOCKET
     useEffect(() => {
@@ -125,9 +128,9 @@ export default function Chat() {
 
             {/* BARRA LATERAL: Lista de Utilizadores */}
             <div className="chat-sidebar" style={{ width: '30%', borderRight: '1px solid #ccc', padding: '10px', overflowY: 'auto' }}>
-                <h3>Contactos</h3>
+                <h3>{t('chat.title')}</h3>
 
-                {utilizadores.length === 0 && <p style={{color: '#888'}}>Nenhum contacto disponível.</p>}
+                {utilizadores.length === 0 && <p style={{color: '#888'}}>{t('chat.empty')}</p>}
 
                 {utilizadores.map((user) => (
                     <div
@@ -170,7 +173,7 @@ export default function Chat() {
                 {chatAtivo ? (
                     <>
                         <div className="chat-header" style={{ padding: '15px', background: '#f4f4f4', borderBottom: '1px solid #ccc' }}>
-                            A falar com: <strong>{chatAtivo.username}</strong>
+                            {t('chat.chatMsg')} <strong>{chatAtivo.username}</strong>
                         </div>
 
                         <div className="chat-messages" style={{ flex: 1, padding: '20px', overflowY: 'auto', background: '#fafafa' }}>
@@ -201,17 +204,17 @@ export default function Chat() {
                                 type="text"
                                 value={novaMensagem}
                                 onChange={(e) => setNovaMensagem(e.target.value)}
-                                placeholder="Escreve uma mensagem..."
+                                placeholder={t('chat.placeholder_msg')}
                                 style={{ flex: 1, padding: '10px', borderRadius: '20px', border: '1px solid #ccc', marginRight: '10px' }}
                             />
                             <button type="submit" style={{ padding: '10px 20px', borderRadius: '20px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer' }}>
-                                Enviar
+                                {t('chat.enviar')}
                             </button>
                         </form>
                     </>
                 ) : (
                     <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', color: '#888' }}>
-                        Selecione um contacto para iniciar conversa.
+                        {t('chat.select_contacto')}
                     </div>
                 )}
             </div>

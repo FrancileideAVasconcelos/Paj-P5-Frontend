@@ -193,7 +193,7 @@ export default function Profile() {
                             onError={(e) => { e.target.src = defaultAvatar; }}
                         />
                         <div className="form-group" style={{ width: '100%', marginTop: '15px' }}>
-                            <label>{t('profile.url')}</label>
+                            <label>{t('geral.url')}</label>
                             <input type="text" name="fotoUrl" value={formData.fotoUrl} onChange={handleFormChange} placeholder={t('profile.placeholder_url')} />
                         </div>
                     </div>
@@ -203,28 +203,28 @@ export default function Profile() {
                     <h3 style={{ marginBottom: '15px', color: '#333' }}>{t('profile.dados_pessoais')}</h3>
 
                     <div className="form-group">
-                        <label>{t('profile.username')}</label>
+                        <label>{t('geral.username')}</label>
                         <input type="text" value={formData.username} disabled style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }} />
                     </div>
 
                     <div className="form-row" style={{ display: 'flex', gap: '15px' }}>
                         <div className="form-group" style={{ flex: 1 }}>
-                            <label>{t('profile.primeiro')}</label>
+                            <label>{t('geral.primeiro')}</label>
                             <input type="text" name="primeiroNome" value={formData.primeiroNome} onChange={handleFormChange} required />
                         </div>
                         <div className="form-group" style={{ flex: 1 }}>
-                            <label>{t('profile.ultimo')}</label>
+                            <label>{t('geral.ultimo')}</label>
                             <input type="text" name="ultimoNome" value={formData.ultimoNome} onChange={handleFormChange} required />
                         </div>
                     </div>
 
                     <div className="form-row" style={{ display: 'flex', gap: '15px' }}>
                         <div className="form-group" style={{ flex: 1 }}>
-                            <label>{t('profile.email')}</label>
+                            <label>{t('geral.email')}</label>
                             <input type="email" name="email" value={formData.email} onChange={handleFormChange} required />
                         </div>
                         <div className="form-group" style={{ flex: 1 }}>
-                            <label>{t('profile.telefone')}</label>
+                            <label>{t('geral.telefone')}</label>
                             <input type="text" name="telefone" value={formData.telefone} onChange={handleFormChange} />
                         </div>
                     </div>

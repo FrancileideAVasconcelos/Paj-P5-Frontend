@@ -17,6 +17,7 @@ import useFormModal from "../hooks/useFormModal.js";
 
 import '../styles/ClientLead.css';
 import '../styles/Admin.css';
+import {useTranslation} from "react-i18next";
 
 /**
  * Componente funcional que renderiza o painel de controlo total sobre um utilizador.
@@ -24,6 +25,9 @@ import '../styles/Admin.css';
  * @returns {JSX.Element} Interface administrativa com cartões de perfil, listas de dados e ações de gestão.
  */
 export default function AdminUserDetails() {
+
+    const { t, i18n } = useTranslation();
+
     /** @type {string} Username extraído dos parâmetros da URL para identificar o utilizador a gerir. */
     const { username } = useParams();
     /** @type {Function} Hook de navegação para redirecionamentos (ex: após apagar conta). */
@@ -89,9 +93,11 @@ export default function AdminUserDetails() {
      */
     const filtroLeads = (
         <select className="filtro" value={filtro} onChange={(e) => setFiltro(e.target.value)}>
-            <option value="">Todos os Estados</option>
-            {STATUS_OPTIONS && STATUS_OPTIONS.map((nome, idx) => (
-                <option key={idx} value={idx}>{nome}</option>
+            <option value="">{t('leads.filtro_todos')}</option>
+            {STATUS_OPTIONS && STATUS_OPTIONS.map((opcao) => (
+                <option key={opcao.id} value={opcao.id}>
+                    {t(opcao.key)}
+                </option>
             ))}
         </select>
     );
@@ -108,8 +114,11 @@ export default function AdminUserDetails() {
      * @param {string} type - 'client' ou 'lead'.
      */
     const handleToggleActive = async (item, type) => {
-        const acao = item.ativo ? 'inativar' : 'reativar';
-        if (window.confirm(`Tem a certeza que deseja ${acao} este registo?`)) {
+        const acao =
+            item.ativo ? t('admin.detalhes.confirm_inativar_item')
+            : t('admin.detalhes.confirm_reativar_item');
+
+        if (window.confirm(acao)) {
             await toggleItemStatus(token, username, type, item.id, item.ativo);
         }
     };
@@ -121,7 +130,7 @@ export default function AdminUserDetails() {
      * @param {string} type - 'client' ou 'lead'.
      */
     const handleDelete = async (item, type) => {
-        if (window.confirm(`ATENÇÃO: Vai apagar permanentemente este registo e perder os dados. Continuar?`)) {
+        if (window.confirm(t('admin.detalhes.confirm_excluir_item'))) {
             await deleteItemPermanent(token, username, type, item.id);
         }
     };
@@ -133,9 +142,12 @@ export default function AdminUserDetails() {
      * @param {boolean} inativar - Se deve inativar (true) ou reativar (false).
      */
     const handleToggleAll = async (type, inativar) => {
-        const acao = inativar ? 'inativar' : 'reativar';
-        const nomeTipo = type === 'client' ? 'todos os clientes' : 'todas as leads';
-        if (window.confirm(`Tem a certeza que deseja ${acao} ${nomeTipo} do utilizador @${username}?`)) {
+
+        const tipoTraduzido = type === 'client' ? t('admin.detalhes.label_clientes')
+            : t('admin.detalhes.label_leads');
+        const chave = inativar ? 'admin.detalhes.confirm_lote_inativar' : 'admin.detalhes.confirm_lote_reativar';
+
+        if (window.confirm(t(chave, { tipo: tipoTraduzido, username }))) {
             await toggleAllItemsStatus(token, username, type, inativar);
         }
     };
@@ -146,8 +158,10 @@ export default function AdminUserDetails() {
      * @param {string} type - 'client' ou 'lead'.
      */
     const handleDeleteAll = async (type) => {
-        const nomeTipo = type === 'client' ? 'TODOS os clientes' : 'TODAS as leads';
-        if (window.confirm(`ATENÇÃO EXPLOSIVA 💣: Vai apagar permanentemente ${nomeTipo}. Continuar?`)) {
+        const tipoTraduzido = type === 'client' ?
+            t('admin.detalhes.label_clientes') : t('admin.detalhes.label_leads');
+
+        if (window.confirm(t('admin.detalhes.confirm_lote_excluir', { tipo: tipoTraduzido }))) {
             await deleteAllItemsPermanent(token, username, type);
         }
     };
@@ -157,8 +171,10 @@ export default function AdminUserDetails() {
      * @async
      */
     const handleToggleUserStatus = async () => {
-        const acao = selectedUser.ativo ? 'inativar' : 'reativar';
-        if (window.confirm(`Tem a certeza que deseja ${acao} a conta de @${username}?`)) {
+        const chave = selectedUser.ativo ? 'admin.detalhes.confirm_inativar_user' :
+            'admin.detalhes.confirm_reativar_user';
+
+        if (window.confirm(t(chave, { username }))){
             if (selectedUser.ativo) await deleteUser(token, username, false);
             else await reactivateUser(token, username);
         }
@@ -170,10 +186,10 @@ export default function AdminUserDetails() {
      * @async
      */
     const handleDeleteUserPermanent = async () => {
-        if (window.confirm(`ATENÇÃO EXPLOSIVA 💣: Vai apagar @${username} e TODOS os seus dados permanentemente. Continuar?`)) {
+        if (window.confirm(t('admin.detalhes.confirm_excluir_user', { username }))) {
             const sucesso = await deleteUser(token, username, true);
             if (sucesso) {
-                alert("Utilizador apagado permanentemente!");
+                alert(t('admin.detalhes.sucesso_excluir_user'));
                 navigate('/admin');
             }
         }
@@ -182,9 +198,9 @@ export default function AdminUserDetails() {
     return (
         <div className="admin-container" style={{ maxWidth: '1100px' }}>
             <div className="details-header">
-                <h2>Painel do Utilizador</h2>
+                <h2>{t('admin.detalhes.titulo')}</h2>
                 <button className="btn-back" onClick={() => navigate('/admin')} style={{ marginBottom: 0 }}>
-                    <i className="fa-solid fa-arrow-left"></i> Voltar à Lista
+                    <i className="fa-solid fa-arrow-left"></i> {t('admin.detalhes.voltar')}
                 </button>
             </div>
 
@@ -196,11 +212,11 @@ export default function AdminUserDetails() {
                 <div className="profile-detail-left">
                     <img src={selectedUser.fotoUrl || defaultAvatar} alt="Avatar" className="profile-detail-avatar" onError={(e) => { e.target.src = defaultAvatar; }} />
                     <div className="profile-detail-info">
-                        <h3>{selectedUser.primeiroNome} {selectedUser.ultimoNome} {selectedUser.admin && <span style={{fontSize:'12px', color: '#3498db'}}><i className="fa-solid fa-crown"></i> Admin</span>}</h3>
+                        <h3>{selectedUser.primeiroNome} {selectedUser.ultimoNome} {selectedUser.admin && <span style={{fontSize:'12px', color: '#3498db'}}><i className="fa-solid fa-crown"></i>{t('admin.detalhes.admin_tag')}</span>}</h3>
                         <div className="profile-detail-contacts">
                             <span><strong>@</strong> {username}</span>
-                            <span><strong>✉️</strong> {selectedUser.email || 'Sem email'}</span>
-                            <span><strong>📞</strong> {selectedUser.telefone || 'Sem telefone'}</span>
+                            <span><strong>✉️</strong> {selectedUser.email || t('admin.detalhes.sem_email')}</span>
+                            <span><strong>📞</strong> {selectedUser.telefone || t('admin.detalhes.sem_telefone')}</span>
                         </div>
                     </div>
                 </div>
@@ -215,19 +231,19 @@ export default function AdminUserDetails() {
                                 onClick={handleToggleUserStatus}
                             >
                                 <i className={`fa-solid ${selectedUser.ativo ? 'fa-user-slash' : 'fa-user-check'}`}></i>
-                                {selectedUser.ativo ? ' Inativar Conta' : ' Reativar Conta'}
+                                {selectedUser.ativo ? t('admin.detalhes.inativar_conta') : t('admin.detalhes.reativar_conta')}
                             </button>
                             <button
                                 className="btn-save-red"
                                 style={{ justifyContent: 'center' }}
                                 onClick={handleDeleteUserPermanent}
                             >
-                                <i className="fa-solid fa-trash"></i> Excluir Conta
+                                <i className="fa-solid fa-trash"></i> {t('admin.detalhes.excluir_conta')}
                             </button>
                         </>
                     ) : (
                         <p style={{ color: '#666', fontSize: '14px', fontStyle: 'italic' }}>
-                            Este é o seu perfil. Use a página de Perfil para edições pessoais.
+                            {t('admin.detalhes.aviso_meu_perfil')}
                         </p>
                     )}
                 </div>
@@ -235,12 +251,12 @@ export default function AdminUserDetails() {
 
             {/* LISTAGENS DE DADOS (CLIENTES E LEADS) */}
             {loadingDetails ? (
-                <p className="loading-text">A carregar dados...</p>
+                <p className="loading-text">{t('admin.detalhes.carregar_dados')}</p>
             ) : (
                 <div className="data-cards-container">
                     {/* Lista de Clientes com ações administrativas unificadas */}
                     <ListClientLeadAdmin
-                        title="Clientes"
+                        title={t('menu.clients')}
                         type="client"
                         data={userClients}
                         cardClass="clients-card"
@@ -254,7 +270,7 @@ export default function AdminUserDetails() {
 
                     {/* Lista de Leads com suporte para filtro de estado */}
                     <ListClientLeadAdmin
-                        title="Leads"
+                        title={t('menu.leads')}
                         type="lead"
                         data={leadsFiltradas}
                         cardClass="leads-card"

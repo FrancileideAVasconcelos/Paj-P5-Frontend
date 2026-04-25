@@ -99,7 +99,7 @@ export default function Leads() {
                                 </div>
                                 {/* Badge dinâmica baseada no estado da lead */}
                                 <span className={`badge status-${lead.estado}`}>
-                                    {STATUS_OPTIONS[lead.estado]}
+                                    {t(STATUS_OPTIONS[lead.estado]?.key)}
                                 </span>
                             </div>
                         </div>

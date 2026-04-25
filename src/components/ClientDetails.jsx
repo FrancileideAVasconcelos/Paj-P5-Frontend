@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import FormModal from "./formModal.jsx";
 import useFormModal from "../hooks/useFormModal.js";
 import '../styles/ClientLead.css';
+import {useTranslation} from "react-i18next";
 
 /**
  * Componente funcional que exibe os detalhes de um Cliente.
@@ -27,6 +28,8 @@ export default function ClientDetails() {
 
     /** @type {string|null} Token de autenticação para autorizar pedidos à API. */
     const token = tokenStore((state) => state.token);
+
+    const { t, i18n } = useTranslation();
 
     // --- ESTADO DA STORE DE CLIENTES ---
     /** @type {Object} Dados do cliente atual e funções de manipulação provenientes da store. */
@@ -54,57 +57,57 @@ export default function ClientDetails() {
      * @returns {Promise<void>}
      */
     const handleRemover = async () => {
-        if (window.confirm("Tem a certeza que deseja remover esse cliente?")) {
+        if (window.confirm(t('clients.detalhes.confirm_remover'))){
             const sucesso = await softDeleteClient(token, id);
             if (sucesso) {
-                alert("Cliente removido!");
+                alert(t('clients.detalhes.alerta'));
                 navigate('/client');
             }
         }
     };
 
     // --- RENDERIZAÇÃO CONDICIONAL DE ESTADOS DE CARREGAMENTO E ERRO ---
-    if (loading) return <div className="loading-state"><p>A carregar...</p></div>;
-    if (!currentClient) return <div className="no-data"><p>Cliente não encontrado.</p></div>;
+    if (loading) return <div className="loading-state"><p>{t('clients.detalhes.carregar_detalhes')}</p></div>;
+    if (!currentClient) return <div className="no-data"><p>{t('cliente.detalhes.cliente_n_encontrado')}</p></div>;
 
     return (
         <div className="admin-container">
             {/* Botão para retroceder no histórico de navegação */}
             <button onClick={() => navigate(-1)} className="btn-back">
-                <i className="fa-solid fa-arrow-left"></i> Voltar
+                <i className="fa-solid fa-arrow-left"></i>{t('clients.detalhes.voltar')}
             </button>
 
             <div className="form-container">
-                <h3 className="form-title">Detalhes do Cliente</h3>
+                <h3 className="form-title">{t('clients.detalhes.titulo')}</h3>
                 <div className="custom-form">
                     {/* Exibição dos dados do Cliente em formato estático */}
                     <div className="form-group">
-                        <label>Nome</label>
+                        <label>{t('clients.detalhes.nome')}</label>
                         <p className="static-data">{currentClient.nome}</p>
                     </div>
 
                     <div className="form-group">
-                        <label>Email</label>
+                        <label>{t('clients.detalhes.email_contacto')}</label>
                         <p className="static-data">{currentClient.email}</p>
                     </div>
 
                     <div className="form-group">
-                        <label>Telefone</label>
+                        <label>{t('clients.detalhes.telefone')}</label>
                         <p className="static-data">{currentClient.telefone}</p>
                     </div>
 
                     <div className="form-group">
-                        <label>Empresa</label>
+                        <label>{t('clients.detalhes.empresa')}</label>
                         <p className="static-data">{currentClient.empresa}</p>
                     </div>
 
                     {/* Ações de Gestão do Cliente */}
                     <div className="form-actions">
                         <button onClick={(e) => modalProps.abrirParaEditar(e, currentClient)} className="btn-save">
-                            <i className="fa-solid fa-pen"></i> Editar Detalhes
+                            <i className="fa-solid fa-pen"></i> {t('clients.detalhes.editar')}
                         </button>
                         <button onClick={handleRemover} className="btn-save-red">
-                            <i className="fa-solid fa-trash-can"></i> Remover Cliente
+                            <i className="fa-solid fa-trash-can"></i> {t('clients.detalhes.remover')}
                         </button>
                     </div>
                 </div>

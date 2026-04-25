@@ -7,6 +7,7 @@
 import {useState, useEffect} from 'react';
 import {STATUS_OPTIONS} from "../utils/constants.js";
 import '../styles/ClientLead.css';
+import {useTranslation} from "react-i18next";
 
 /**
  * Componente funcional que renderiza um formulário dentro de uma sobreposição (overlay) modal.
@@ -23,6 +24,8 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
     /** * @type {Object|null} Estado local que armazena os dados temporários enquanto o utilizador edita os campos.
      */
     const [formData, setFormData] = useState(null);
+
+    const { t, i18n } = useTranslation();
 
     /**
      * Efeito de Sincronização: Sempre que o modal abre, clona os dados iniciais para o estado local
@@ -44,8 +47,10 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
 
     /** @type {boolean} Determina se o formulário está em modo de edição baseado na presença de um ID. */
     const isEdit = !!initialData.id;
-    /** @type {string} Nome amigável da entidade para exibição nos títulos. */
-    const entityName = type === 'client' ? 'Cliente' : 'Lead';
+
+    const titleKey = type === 'client'
+        ? (isEdit ? 'form_modal.editar_client' : 'form_modal.adicionar_client')
+        : (isEdit ? 'form_modal.editar_lead' : 'form_modal.adicionar_lead');
 
     /**
      * Gere a submissão do formulário.
@@ -61,14 +66,14 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
     return (
         <div className="modal-overlay">
             <div className="modal-content">
-                <h3>{isEdit ? `Editar ${entityName}` : `Adicionar ${entityName}`}</h3>
+                <h3>{t(titleKey)}</h3>
                 <form onSubmit={handleSubmit} className="custom-form">
 
                     {/* RENDERIZAÇÃO CONDICIONAL: CAMPOS DE CLIENTE */}
                     {type === 'client' ? (
                         <>
                             <div className="form-group">
-                                <label>Nome</label>
+                                <label>{t('form_modal.nome')}</label>
                                 <input
                                     type="text"
                                     value={formData.nome || ''}
@@ -77,7 +82,7 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Email</label>
+                                <label>{t('form_modal.email')}</label>
                                 <input
                                     type="email"
                                     value={formData.email || ''}
@@ -85,7 +90,7 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Telefone</label>
+                                <label>{t('form_modal.telefone')}</label>
                                 <input
                                     type="text"
                                     value={formData.telefone || ''}
@@ -93,7 +98,7 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Empresa</label>
+                                <label>{t('form_modal.empresa')}</label>
                                 <input
                                     type="text"
                                     value={formData.empresa || ''}
@@ -105,7 +110,7 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                         /* RENDERIZAÇÃO CONDICIONAL: CAMPOS DE LEAD */
                         <>
                             <div className="form-group">
-                                <label>Título da Oportunidade *</label>
+                                <label>{t('form_modal.titulo_lead')}</label>
                                 <input
                                     type="text"
                                     value={formData.titulo || formData.nome || ''}
@@ -114,7 +119,7 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Descrição</label>
+                                <label>{t('form_modal.descricao')}</label>
                                 <textarea
                                     value={formData.descricao || ''}
                                     onChange={(e) => setFormData({...formData, descricao: e.target.value})}
@@ -128,7 +133,7 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Estado</label>
+                                <label>{t('form_modal.estado')}</label>
                                 <select
                                     value={formData.estado || 0}
                                     onChange={(e) => setFormData({...formData, estado: parseInt(e.target.value)})}
@@ -140,8 +145,10 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                                     }}
                                 >
                                     {/* Mapeia as opções de estado definidas nas constantes do projeto */}
-                                    {STATUS_OPTIONS.map((nome, idx) => (
-                                        <option key={idx} value={idx}>{nome}</option>
+                                    {STATUS_OPTIONS.map((opcao) => (
+                                        <option key={opcao.id} value={opcao.id}>
+                                            {t(opcao.key)}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -151,14 +158,14 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                     {/* ACÇÕES DO MODAL */}
                     <div className="modal-actions">
                         <button type="button" className="btn-cancel" onClick={onClose}>
-                            Cancelar
+                            {t('form_modal.cancelar')}
                         </button>
                         <button
                             type="submit"
                             className="btn-save"
                             disabled={!teveAlteracao} // Bloqueia o clique se não houver mudanças reais
                         >
-                            {isEdit ? 'Salvar Alterações' : 'Adicionar'}
+                            {isEdit ? t('form_modal.salvar') : t('form_modal.adicionar')}
                         </button>
                     </div>
                 </form>

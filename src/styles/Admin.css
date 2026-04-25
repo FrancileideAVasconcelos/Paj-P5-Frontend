@@ -165,3 +165,40 @@
 .btn-profile-warning:hover { background-color: #fff7ed; color: #c2410c; border-color: #fdba74; }
 .btn-profile-success:hover { background-color: #f0fdf4; color: #15803d; border-color: #86efac; }
 .btn-profile-danger:hover { background-color: #fef2f2; color: #b91c1c; border-color: #fca5a5; }
+
+/* --- RESPONSIVIDADE PARA O PAINEL DE ADMINISTRAÇÃO --- */
+@media (max-width: 768px) {
+    .details-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    /* Empilha a foto de perfil em cima e os botões de ação em baixo */
+    .profile-detail-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .profile-detail-left {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .profile-detail-contacts {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    /* Cartões da lista de utilizadores */
+    .user-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+
+    .user-info {
+        flex-direction: column;
+    }
+}

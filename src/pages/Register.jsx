@@ -72,27 +72,27 @@ export default function Register() {
                 <form onSubmit={handleSubmeter} className="custom-form">
 
                     <div className="form-group">
-                        <label>{t('registo.username')}</label>
+                        <label>{t('geral.username')}</label>
                         <input type="text" name="username" value={formData.username} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
-                        <label>{t('registo.pass')}</label>
+                        <label>{t('geral.pass')}</label>
                         <input type="password" name="password" value={formData.password} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
-                        <label>{t('registo.primeiro')}</label>
+                        <label>{t('geral.primeiro')}</label>
                         <input type="text" name="primeiroNome" value={formData.primeiroNome} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
-                        <label>{t('registo.ultimo')}</label>
+                        <label>{t('geral.ultimo')}</label>
                         <input type="text" name="ultimoNome" value={formData.ultimoNome} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
-                        <label>{t('registo.telefone')}</label>
+                        <label>{t('geral.telefone')}</label>
                         <input type="text" name="telefone" value={formData.telefone} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
-                        <label>{t('registo.url')}</label>
+                        <label>{t('geral.url')}</label>
                         <input type="text" name="fotoUrl" value={formData.fotoUrl} onChange={handleChange} />
                     </div>
 
