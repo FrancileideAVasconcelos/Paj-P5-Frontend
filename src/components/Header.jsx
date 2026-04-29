@@ -40,36 +40,37 @@ export default function Header({ toggleMenu }) {
 
     // --- LIGAÇÃO GLOBAL DE NOTIFICAÇÕES ---
     useEffect(() => {
+        if (!token) return;
+
         let pingInterval;
+        // Variável local — nunca muda dentro deste closure
+        const ws = new WebSocket(`ws://localhost:8080/projeto5/ws/notifications/${token}`);
+        wsNotif.current = ws;
 
-        if (token) {
-            // Ligar à autoestrada das Notificações
-            wsNotif.current = new WebSocket(`ws://localhost:8080/projeto5/ws/notifications/${token}`);
-
-            wsNotif.current.onopen = () => {
-                console.log("🔔 Header Conectado ao Serviço de Notificações!");
-                pingInterval = setInterval(() => {
-                    if (wsNotif.current?.readyState === WebSocket.OPEN) {
-                        wsNotif.current.send("PING");
-                    }
-                }, 60000);
-            };
-
-            wsNotif.current.onmessage = (event) => {
-                const dados = JSON.parse(event.data);
-                if (dados.type === 'UNREAD_COUNT') {
-                    setUnreadCount(dados.count);
+        ws.onopen = () => {
+            console.log("🔔 Header Conectado ao Serviço de Notificações!");
+            pingInterval = setInterval(() => {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send("PING");
                 }
-            };
+            }, 60000);
+        };
 
-            wsNotif.current.onclose = () => {
-                clearInterval(pingInterval);
-            };
-        }
+        ws.onmessage = (event) => {
+            const dados = JSON.parse(event.data);
+            if (dados.type === 'UNREAD_COUNT') {
+                setUnreadCount(dados.count);
+            }
+        };
 
         return () => {
-            if (wsNotif.current) wsNotif.current.close();
-            if (pingInterval) clearInterval(pingInterval);
+            clearInterval(pingInterval);
+            // Usa a variável local `ws`, não o ref que pode já ter mudado
+            if (ws.readyState === WebSocket.CONNECTING) {
+                ws.onopen = () => ws.close(1000, 'Cleanup');
+            } else if (ws.readyState === WebSocket.OPEN) {
+                ws.close(1000, 'Cleanup');
+            }
         };
     }, [token, setUnreadCount]);
 

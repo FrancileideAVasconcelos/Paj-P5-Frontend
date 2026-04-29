@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import tokenStore from '../store/tokenStore.js';
 import { api } from '../services/api';
-import { Link } from 'react-router-dom';
+import {Link, useLocation} from 'react-router-dom';
 import '../styles/loginRegister.css';
 import useUserStore from "../store/useUserStore.js";
 import {useTranslation} from "react-i18next";
@@ -22,14 +22,14 @@ export default function Login() {
 
     const { t, i18n } = useTranslation();
 
+    const location = useLocation();
+    const [erro, setErro] = useState(location.state?.erro || ''); // Puxa o erro do redirecionamento
+
     /** @type {string} Estado local para o nome de utilizador inserido. */
     const [username, setUsername] = useState('');
 
     /** @type {string} Estado local para a password inserida. */
     const [password, setPassword] = useState('');
-
-    /** @type {string} Estado para exibir mensagens de erro provenientes da API ou validação. */
-    const [erro, setErro] = useState('');
 
     /** * Função de login proveniente da store de tokens (Zustand).
      * @type {Function}

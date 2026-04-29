@@ -74,7 +74,13 @@ export default function ListClientLeadAdmin({
                                         {type === 'client' ? (
                                             <><i className="fa-regular fa-building"></i> <span style={{ fontWeight: 'bold', color: '#2980b9' }}>{item.empresa || item.email}</span></>
                                         ) : (
-                                            <><i className="fa-solid fa-flag"></i> Estado: <span style={{ fontWeight: 'bold', color: '#2980b9' }}>{nomesDosEstados[item.estado] || "Desconhecido"}</span></>
+                                            <>
+                                                <i className="fa-solid fa-flag"></i> Estado:
+                                                <span style={{ fontWeight: 'bold', color: '#2980b9' }}>
+                                                    {/* STATUS_OPTIONS vem de ../utils/constants.js */}
+                                                    {t(STATUS_OPTIONS.find(opt => opt.id === item.estado)?.key || "Desconhecido")}
+                                                </span>
+                                            </>
                                         )}
                                     </span>
 

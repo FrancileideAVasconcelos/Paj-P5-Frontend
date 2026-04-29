@@ -12,7 +12,7 @@ const resources = {
                 "ultimo": "Último Nome",
                 "telefone": "Telefone",
                 "url": "URL da foto",
-                "sessao_expirada": "Sessão expirada.",
+                "sessao_expirada": "A sua sessão expirou por inatividade. Faça login novamente.",
             },
             "header": {
                 "welcome": "Bem-vindo",
@@ -77,8 +77,19 @@ const resources = {
             },
             "dashboard": {
                 "title": "Painel de Resumo",
+                "aviso": "Aviso",
                 "total_leads": "Total de leads",
-                "total_clients": "Total de clientes"
+                "total_clients": "Total de clientes",
+                "total_utilizadores": "Total Utilizadores",
+                "contas_ativas": "Contas Ativas",
+                "distribuicao_leads": "Distribuição de Leads",
+                "sem_dados": "Sem dados suficientes.",
+                "evolucao_leads": "Evolução de Leads (Tempo)",
+                "sem_historico": "Sem histórico registado",
+                "leads_user": "Leads por Utilizador",
+                "sem_lead": "Nenhuma lead associada",
+                "evolucao_user": "Evolução de Utilizadores Registados",
+
             },
             "form_modal": {
                 "editar_client": "Editar Cliente",
@@ -216,7 +227,8 @@ const resources = {
                 "primeiro": "First Name",
                 "ultimo": "Last Name",
                 "telefone": "Phone Number",
-                "url": "Photo URL"
+                "url": "Photo URL",
+                "sessao_expirada": "Your session has expired due to inactivity. Please log in again."
             },
             "login": {
                 "entrar": "Sign In",

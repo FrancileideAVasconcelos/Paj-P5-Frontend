@@ -88,22 +88,27 @@ export default function Leads() {
                 <div className="loading-state"><p>{t('leads.carregar')}</p></div>
             ) : (
                 <div className="data-list">
-                    {leads.map((lead) => (
-                        <div key={lead.id} className="data-item" onClick={() => navigate(`/leads/${lead.id}`)}>
-                            <div className="data-info">
-                                <div className="data-header-row">
-                                    <div>
-                                        <h4 className="data-title">{lead.titulo}</h4>
-                                        <span className="data-date">{formatarData(lead.dataCriacao)}</span>
+                    {leads.map((lead) => {
+                        // Usamos String() para garantir que 0 e "0" são considerados iguais
+                        const opcaoEstado = STATUS_OPTIONS.find(opt => String(opt.id) === String(lead.estado));
+
+                        return (
+                            <div key={lead.id} className="data-item" onClick={() => navigate(`/leads/${lead.id}`)}>
+                                <div className="data-info">
+                                    <div className="data-header-row">
+                                        <div>
+                                            <h4 className="data-title">{lead.titulo}</h4>
+                                            <span className="data-date">{formatarData(lead.dataCriacao)}</span>
+                                        </div>
                                     </div>
+                                    {/* Badge dinâmica baseada no estado da lead */}
+                                    <span className={`badge status-${lead.estado}`}>
+                                        {opcaoEstado ? t(opcaoEstado.key) : "---"}
+                                    </span>
                                 </div>
-                                {/* Badge dinâmica baseada no estado da lead */}
-                                <span className={`badge status-${lead.estado}`}>
-                                    {t(STATUS_OPTIONS[lead.estado]?.key)}
-                                </span>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 

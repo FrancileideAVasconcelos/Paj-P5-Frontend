@@ -1,95 +1,210 @@
-/**
- * @file Dashboard.jsx
- * @description Componente de página que serve como o painel principal da aplicação.
- * Apresenta métricas de resumo (total de leads e clientes) e permite a navegação rápida
- * para as áreas de gestão respetivas através de cartões clicáveis.
- */
-
-import { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // Importamos o hook de navegação
-import useLeadStore from "../store/useLeadStore.js";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import tokenStore from "../store/tokenStore.js";
-import useClientStore from "../store/useClientStore.js";
-import { ChatService } from '../services/api';
-import '../styles/Dashboard.css';
 import useUserStore from "../store/useUserStore.js";
-import {useTranslation} from "react-i18next";
+import { api } from "../services/api.js";
+import { useTranslation } from "react-i18next";
+import '../styles/Dashboard.css';
 
-/**
- * Componente funcional que renderiza o painel de resumo do utilizador.
- * @component
- * @returns {JSX.Element} Estrutura visual do dashboard com estatísticas e alertas.
- */
-export default function Dashboard(){
-    /** @type {Function} Hook para realizar a navegação entre rotas. */
+import {
+    LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell,
+    PieChart, Pie, Legend, ResponsiveContainer
+} from 'recharts';
+
+export default function Dashboard() {
     const navigate = useNavigate();
-
-    // --- ESTADOS DAS STORES ---
-    /** @type {Object} Dados e funções da store de leads. */
-    const { leads, fetchLeads } = useLeadStore();
-    /** @type {Object} Dados e funções da store de clientes. */
-    const { clients, fetchClient } = useClientStore();
-    /** @type {string|null} Token de autenticação para as chamadas à API. */
-    const token = tokenStore((state) => state.token);
-
-    /** @type {Object} Objeto de localização para capturar estados passados por redirecionamento. */
     const location = useLocation();
-    /** @type {string|undefined} Mensagem de erro (ex: acesso negado a admin) enviada via state. */
     const mensagemErro = location.state?.erro;
 
-    const setUnreadCount = useUserStore((state) => state.setUnreadCount);
+    const token = tokenStore((state) => state.token);
+    const { t } = useTranslation();
+    const { currentUser, fetchCurrentUser } = useUserStore();
 
-    const { t, i18n } = useTranslation();
+    const [stats, setStats] = useState(null);
 
-    /**
-     * Efeito de carregamento inicial: Procura os dados de leads e clientes
-     * assim que o token de autenticação estiver disponível.
-     */
+    const [chartHeight, setChartHeight] = useState(320);
+
+    useEffect(() => {
+        const updateHeight = () => {
+            if (window.innerWidth <= 480) setChartHeight(180);
+            else if (window.innerWidth <= 768) setChartHeight(220);
+            else setChartHeight(320);
+        };
+
+        updateHeight();
+        window.addEventListener('resize', updateHeight);
+        return () => window.removeEventListener('resize', updateHeight);
+    }, []);
+
+    useEffect(() => {
+        if (token && !currentUser) fetchCurrentUser(token);
+    }, [token, currentUser, fetchCurrentUser]);
+
     useEffect(() => {
         if (token) {
-            fetchLeads(token); // Carrega a lista de leads
-            fetchClient(token); // Carrega a lista de clientes
-
-            // --- NOVO: Vai buscar as notificações ao Java e guarda no Zustand ---
-            ChatService.getUnreadCount()
-                .then(res => setUnreadCount(res.count))
+            api.get('/dashboard/stats')
+                .then(res => setStats(res))
                 .catch(console.error);
         }
-    }, [token, fetchLeads, fetchClient, setUnreadCount]);
+    }, [token]);
 
-    /** @type {number} Cálculo do total de leads no estado. */
-    const totalLeads = leads.length;
-    /** @type {number} Cálculo do total de clientes no estado, com proteção para valores nulos. */
-    const totalClients = clients.length ? clients.length : 0;
+    const isAdmin = currentUser?.admin === true;
+
+    // --- FORMATAÇÃO DOS DADOS PARA OS GRÁFICOS --- //
+    const CORES_TARTE = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
+
+    // 1. Leads por Estado (Tarte)
+    const dadosLeadsPorEstado = useMemo(() => {
+        if (!stats?.leads || stats.leads.length === 0) return [];
+        const contagem = {};
+        const nomesDosEstados = ["Novo", "Em análise", "Proposta", "Ganho", "Perdido"];
+
+        stats.leads.forEach(lead => {
+            const estadoId = Number(lead.estado);
+            if (!contagem[estadoId]) {
+                contagem[estadoId] = { name: nomesDosEstados[estadoId] || `Estado ${estadoId}`, value: 0 };
+            }
+            contagem[estadoId].value += 1;
+        });
+        return Object.values(contagem);
+    }, [stats]);
+
+    // 2. Evolução Combinada (Leads + Utilizadores no mesmo gráfico!)
+    const evolucaoCombinadaData = useMemo(() => {
+        if (!stats) return [];
+        const mapaDatas = {};
+
+        if (stats.evolucaoLeads) {
+            Object.entries(stats.evolucaoLeads).forEach(([data, qtd]) => {
+                mapaDatas[data] = { data, leads: qtd, users: 0 };
+            });
+        }
+
+        if (stats.evolucaoUtilizadores) {
+            Object.entries(stats.evolucaoUtilizadores).forEach(([data, qtd]) => {
+                if (!mapaDatas[data]) {
+                    mapaDatas[data] = { data, leads: 0, users: 0 };
+                }
+                mapaDatas[data].users = qtd;
+            });
+        }
+
+        return Object.values(mapaDatas).sort((a, b) => a.data.localeCompare(b.data));
+    }, [stats]);
+
+    // 3. Leads por Utilizador
+    const leadsPorUserData = stats?.leadsPorUtilizador
+        ? Object.entries(stats.leadsPorUtilizador).map(([name, quantidade]) => ({ name, quantidade }))
+        : [];
+
+
+    if (!stats) return <p style={{padding: '20px', textAlign: 'center'}}>A carregar painel...</p>;
 
     return (
         <div>
-            {/* Exibe alertas de erro de navegação (ex: tentativa de acesso a rotas admin) */}
             {mensagemErro && (
-                <div className="alert-error" style={{ color: 'red', padding: '10px', border: '1px solid red' }}>
-                    {mensagemErro}
+                <div className="alert-error" style={{ color: 'red', padding: '15px', backgroundColor: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '8px', marginBottom: '20px' }}>
+                    <strong><i className="fa-solid fa-triangle-exclamation"></i> Aviso:</strong> {mensagemErro}
                 </div>
             )}
-            <div className="dashboard-container">
-                <h2 className="dashboard-title">{t('dashboard.title')}</h2>
 
+            <div className="dashboard-container">
+                <h2 className="dashboard-title">
+                    {t('dashboard.title')}
+                </h2>
+
+                {/* --- CARTÕES SUPERIORES --- */}
                 <div className="stats-grid">
-                    {/* Cartão estatístico clicável que redireciona para a página de Leads */}
-                    <div
-                        className="stat-card clickable"
-                        onClick={() => navigate('/leads')}
-                    >
-                        <h3>{t('dashboard.total_leads')}</h3>
-                        <p className="stat-number">{totalLeads}</p>
+                    <div className="stat-card">
+                        <div className="stat-icon"><i className="fa-solid fa-bullseye" style={{color: '#0ea5e9'}}></i></div>
+                        <div><h3>{t('dashboard.total_leads')}</h3><p className="stat-number">{stats.totalLeads}</p></div>
                     </div>
 
-                    {/* Cartão estatístico clicável que redireciona para a página de Clientes */}
-                    <div  className="stat-card clickable"
-                          onClick={() => navigate('/client')}>
-                        <h3>{t('dashboard.total_clients')}</h3>
-                        <p className="stat-number">{totalClients}</p>
+                    <div className="stat-card">
+                        <div className="stat-icon"><i className="fa-solid fa-users" style={{color: '#10b981'}}></i></div>
+                        <div><h3>{t('dashboard.total_clients')}</h3><p className="stat-number">{stats.totalClients}</p></div>
+                    </div>
+
+                    {isAdmin && (
+                        <>
+                            <div className="stat-card clickable" onClick={() => navigate('/admin')}>
+                                <div className="stat-icon"><i className="fa-solid fa-users-gear" style={{color: '#8b5cf6'}}></i></div>
+                                <div><h3>{t('dashboard.total_utilizadores')}</h3><p className="stat-number">{stats.totalUsers}</p></div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-icon"><i className="fa-solid fa-user-check" style={{color: '#f59e0b'}}></i></div>
+                                <div><h3>{t('dashboard.contas_ativas')}</h3><p className="stat-number">{stats.contasConfirmadas}</p></div>
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                {/* --- GRELHA SUPERIOR DE GRÁFICOS (Tarte e Bolinhas ficam lado a lado) --- */}
+                <div className="charts-grid">
+
+                    {/* GRÁFICO 1: Leads por Estado (Tarte) */}
+                    <div className="chart-card">
+                        <h3><i className="fa-solid fa-chart-pie"></i> {t('dashboard.distribuicao_leads')}</h3>
+                        <div className="chart-wrapper" style={{ width: '100%', height: '300px', display: 'flex', justifyContent: 'center' }}>
+                            {dadosLeadsPorEstado.length > 0 ? (
+                                <PieChart width={400} height={280}>
+                                    <Pie data={dadosLeadsPorEstado} cx="50%" cy="50%" innerRadius={70} outerRadius={95} paddingAngle={5} dataKey="value" stroke="none">
+                                        {dadosLeadsPorEstado.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={CORES_TARTE[index % CORES_TARTE.length]} />
+                                        ))}
+                                    </Pie>
+                                    <RechartsTooltip borderRadius={8} />
+                                    <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                                </PieChart>
+                            ) : (<p style={{color: '#94a3b8', textAlign: 'center', marginTop: '100px'}}>{t('dashboard.sem_dados')}</p>)}
+                        </div>
+                    </div>
+
+                    {/* GRÁFICO 2: Leads por Utilizador (BARRAS) - Fica na grelha ao lado da Tarte para Admins */}
+                    {isAdmin && (
+                        <div className="chart-card">
+                            <h3><i className="fa-solid fa-chart-column"></i> {t('dashboard.leads_user')}</h3>
+                            <div className="chart-wrapper" style={{ width: '100%', height: '300px', overflowX: 'auto', display: 'flex', justifyContent: 'center' }}>
+                                {leadsPorUserData.length > 0 ? (
+                                    <BarChart width={450} height={280} data={leadsPorUserData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                        <XAxis dataKey="name" tick={{fill: '#64748b'}} axisLine={false} tickLine={false} />
+                                        <YAxis allowDecimals={false} tick={{fill: '#64748b'}} axisLine={false} tickLine={false} />
+                                        <RechartsTooltip cursor={{fill: '#f1f5f9'}} borderRadius={8} />
+
+                                        <Bar dataKey="quantidade" name="Quantidade" fill="#8b5cf6" radius={[6, 6, 0, 0]} barSize={40} />
+                                    </BarChart>
+                                ) : (<p style={{color: '#94a3b8', textAlign: 'center', marginTop: '100px'}}>{t('dashboard.sem_lead')}</p>)}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* --- GRÁFICO INFERIOR DE LARGURA TOTAL (Evolução Temporal) --- */}
+                <div className="chart-card" style={{ marginTop: '20px' }}>
+                    <h3><i className="fa-solid fa-chart-line"></i> Evolução Temporal</h3>
+                    {/* A altura é definida aqui, e o ResponsiveContainer preenche 100% */}
+                    <div className="chart-wrapper" style={{ width: '100%', height: '350px' }}>
+                        {evolucaoCombinadaData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={chartHeight}>
+                                <LineChart data={evolucaoCombinadaData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                    <XAxis dataKey="data" tick={{fill: '#64748b'}} axisLine={false} tickLine={false} />
+                                    <YAxis allowDecimals={false} tick={{fill: '#64748b'}} axisLine={false} tickLine={false} />
+                                    <RechartsTooltip borderRadius={8} />
+                                    <Legend verticalAlign="bottom" height={36} iconType="plainline" />
+
+                                    <Line type="monotone" name="Leads" dataKey="leads" stroke="#0ea5e9" strokeWidth={3} dot={{ r: 4, fill: '#0ea5e9' }} activeDot={{ r: 6 }} />
+
+                                    {isAdmin && (
+                                        <Line type="monotone" name="Utilizadores" dataKey="users" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, fill: '#f59e0b' }} activeDot={{ r: 6 }} />
+                                    )}
+                                </LineChart>
+                            </ResponsiveContainer>
+                        ) : (<p style={{color: '#94a3b8', textAlign: 'center', marginTop: '120px'}}>{t('dashboard.sem_historico')}</p>)}
                     </div>
                 </div>
+
             </div>
         </div>
     );

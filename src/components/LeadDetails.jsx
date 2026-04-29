@@ -97,10 +97,10 @@ export default function LeadDetails() {
                     <div className="form-group">
                         <label>{t('leads.detalhes.estado')}</label>
                         <div className="static-data-badge">
-                            {/* Badge dinâmica baseada no estado da lead definida nas constantes */}
+                            {/* Usamos o .find() para encontrar o objeto correto pelo ID numérico */}
                             <span className={`badge status-${currentLead.estado}`}>
-                                {STATUS_OPTIONS[currentLead.estado]}
-                            </span>
+                            {t(STATUS_OPTIONS.find(opt => opt.id === currentLead.estado)?.key || '---')}
+                        </span>
                         </div>
                     </div>
 
