@@ -24,7 +24,6 @@ const resources = {
                 "esqueceu_pass": "Esqueceu a sua password?",
                 "recup_pass": "Recuperar aqui",
                 "erro_servidor": "Resposta do servidor inválida.",
-                // reset password
                 "sucesso": "Password redefinida com sucesso! Pode fazer login.",
                 "token_expirado": "Erro: O token expirou ou é inválido.",
                 "pass_erradas": "As passwords não coincidem.",
@@ -77,19 +76,20 @@ const resources = {
             },
             "dashboard": {
                 "title": "Painel de Resumo",
-                "aviso": "Aviso",
-                "total_leads": "Total de leads",
-                "total_clients": "Total de clientes",
+                "a_carregar": "A Carregar dados...",
+                "total_leads": "Total Leads",
+                "total_clients": "Total Clientes",
                 "total_utilizadores": "Total Utilizadores",
                 "contas_ativas": "Contas Ativas",
-                "distribuicao_leads": "Distribuição de Leads",
-                "sem_dados": "Sem dados suficientes.",
-                "evolucao_leads": "Evolução de Leads (Tempo)",
-                "sem_historico": "Sem histórico registado",
+                "distribuicao_leads": "Leads por Estado",
+                "sem_dados": "Sem dados para apresentar",
                 "leads_user": "Leads por Utilizador",
-                "sem_lead": "Nenhuma lead associada",
-                "evolucao_user": "Evolução de Utilizadores Registados",
-
+                "sem_lead": "Nenhum utilizador com leads.",
+                "evolucao_temporal": "Evolução de Temporal",
+                "sem_historico": "Sem histórico para apresentar.",
+                "tooltip_leads": "Leads",
+                "tooltip_users": "Utilizadores",
+                "tooltip_qtd": "Quantidade"
             },
             "form_modal": {
                 "editar_client": "Editar Cliente",
@@ -100,16 +100,12 @@ const resources = {
                 "email": "Email",
                 "telefone": "Telefone",
                 "empresa": "Empresa",
-                "titulo_lead": "Título da Oportunidade *",
+                "titulo_lead": "Título da Oportunidade ",
                 "descricao": "Descrição",
                 "estado": "Estado",
                 "cancelar": "Cancelar",
                 "salvar": "Salvar Alterações",
                 "adicionar": "Adicionar",
-                "use_form_modal": {
-                    "sucesso": "Operação realizada com sucesso!",
-                    "erro": "Ocorreu um erro ao guardar os dados."
-                }
             },
             "leads": {
                 "title": "Gestão de Oportunidades",
@@ -122,6 +118,14 @@ const resources = {
                 "filtro_perdido": "Perdido",
                 "filtro_proposta": "Proposta",
                 "carregar": "A carregar leads...",
+                "vazio": "Nenhuma lead encontrada.",
+                "estado": {
+                    "novo": "Novo",
+                    "analise": "Em Análise",
+                    "proposta": "Proposta",
+                    "ganho": "Ganho",
+                    "perdido": "Perdido"
+                },
                 "detalhes": {
                     "titulo_pag": "Detalhes da Oportunidade",
                     "voltar": "Voltar à Lista",
@@ -156,51 +160,61 @@ const resources = {
                     "alerta": "Cliente removid  o!"
                 }
             },
-            "chat": {
-                "title": "Contactos",
-                "empty": "Nenhum contacto disponível.",
-                "chatMsg": "A falar com:",
-                "placeholder_msg": "Escreve uma mensagem...",
-                "enviar": "Enviar",
-                "select_contacto": "Selecione um contacto para iniciar conversa.",
-
-            },
             "admin": {
                 "title": "Gestão de Utilizadores",
-                "convidar": "Convidar Novo Utilizador",
-                "placeholder_email": "E-mail do novo utilizador",
-                "enviando": "A enviar...",
+                "convidar": "Convidar User",
+                "placeholder_email": "Email do novo utilizador",
+                "enviando": "A Enviar...",
                 "enviar_convite": "Enviar Convite",
+                "inviteMsg": "Convite enviado com sucesso!",
+                "erroMsg": "Erro ao enviar convite.",
                 "carregar_utilizadores": "A carregar utilizadores...",
+                "placeholder_pesquisa": "Digite um username ou email",
                 "ativo": "Ativo",
                 "inativo": "Inativo",
                 "lista_vazia": "Nenhum utilizador encontrado.",
-                "inviteMsg": "Convite enviado com sucesso para o Email!",
-                "erroMsg": "Erro ao enviar convite.",
-
                 "detalhes": {
-                        "titulo": "Painel do Utilizador",
-                        "voltar": "Voltar à Lista",
-                        "admin_tag": "Admin",
-                        "sem_email": "Sem email",
-                        "sem_telefone": "Sem telefone",
-                        "inativar_conta": "Inativar Conta",
-                        "reativar_conta": "Reativar Conta",
-                        "excluir_conta": "Excluir Conta",
-                        "aviso_meu_perfil": "Este é o seu perfil. Use a página de Perfil para edições pessoais.",
-                        "carregar_dados": "A carregar dados...",
-                        "confirm_inativar_item": "Tem a certeza que deseja inativar este registo?",
-                        "confirm_reativar_item": "Tem a certeza que deseja reativar este registo?",
-                        "confirm_excluir_item": "ATENÇÃO: Vai apagar permanentemente este registo e perder os dados. Continuar?",
-                        "confirm_inativar_user": "Tem a certeza que deseja inativar a conta de @{{username}}?",
-                        "confirm_reativar_user": "Tem a certeza que deseja reativar a conta de @{{username}}?",
-                        "confirm_excluir_user": "ATENÇÃO EXPLOSIVA 💣: Vai apagar @{{username}} e TODOS os seus dados permanentemente. Continuar?",
-                        "sucesso_excluir_user": "Utilizador apagado permanentemente!",
-                        "label_clientes": "todos os clientes",
-                        "label_leads": "todas as leads",
-                        "confirm_lote_inativar": "Tem a certeza que deseja inativar {{tipo}} do utilizador @{{username}}?",
-                        "confirm_lote_reativar": "Tem a certeza que deseja reativar {{tipo}} do utilizador @{{username}}?",
-                        "confirm_lote_excluir": "ATENÇÃO EXPLOSIVA 💣: Vai apagar permanentemente {{tipo}}. Continuar?"
+                    "admin_tag": "Admin",
+                    "sem_email": "Sem Email",
+                    "sem_telefone": "Sem Telefone",
+                }
+            },
+            "chat": {
+                "title": "Mensagens",
+                "select_contacto": "Selecione um contato",
+                "placeholder": "Escreva a sua mensagem...",
+                "enviar": "Enviar",
+                "empty": "A carregar contactos",
+                "chat_msg": "A falar com: ",
+                "placeholder_msg": "Digite a mensagem",
+                "erro_ws": "Desconectado do chat. A tentar reconectar..."
+            },
+            "admin_user_details": {
+                "titulo": "Detalhes de Conta",
+                "btn_voltar": "Voltar",
+                "dados_pessoais": "Dados Pessoais",
+                "email": "Email",
+                "telefone": "Telefone",
+                "membro_desde": "Membro desde",
+                "permissoes": "Permissões e Estado",
+                "conta_ativa": "Conta Ativa",
+                "aviso_meu_perfil": "Vá ao meu profile para edição de perfil",
+                "carregar_dados": "A carregar dados...",
+                "desativar_conta": "Desativar Conta",
+                "ativar_conta": "Ativar Conta",
+                "excluir_conta": "Removerr Conta",
+                "aviso_apagar": "Tem a certeza que deseja apagar esta conta permanentemente?",
+                "aviso_desativar": "Tem a certeza que deseja desativar esta conta?",
+                "tabs": {
+                    "clientes": "Clientes ({{total}})",
+                    "leads": "Leads ({{total}})"
+                },
+                "botoes_lote": {
+                    "label_clientes": "todos os clientes",
+                    "label_leads": "todas as leads",
+                    "confirm_lote_inativar": "Tem a certeza que deseja inativar {{tipo}} do utilizador @{{username}}?",
+                    "confirm_lote_reativar": "Tem a certeza que deseja reativar {{tipo}} do utilizador @{{username}}?",
+                    "confirm_lote_excluir": "AVISO EXPLOSIVO 💣: Vai apagar permanentemente {{tipo}}. Continuar?"
                 },
                 "lista": {
                     "reativar_todos": "Reativar todos",
@@ -211,7 +225,7 @@ const resources = {
                     "inativar": "Inativar",
                     "reativar": "Reativar",
                     "excluir": "Excluir",
-                    "vazia": "Nenhum registo de {{tipo}} encontrado."
+                    "vazia": "Nenhum {{tipo}} encontrado."
                 }
             },
             "footer": {
@@ -226,22 +240,29 @@ const resources = {
                 "pass": "Password",
                 "primeiro": "First Name",
                 "ultimo": "Last Name",
-                "telefone": "Phone Number",
+                "telefone": "Phone",
                 "url": "Photo URL",
                 "sessao_expirada": "Your session has expired due to inactivity. Please log in again."
+            },
+            "header": {
+                "welcome": "Welcome",
+                "profile": "My Profile",
+                "logout": "Logout"
             },
             "login": {
                 "entrar": "Sign In",
                 "esqueceu_pass": "Forgot your password?",
                 "recup_pass": "Recover here",
-                "sucesso": "Password reset successfully! You can now login.",
+                "erro_servidor": "Invalid server response.",
+                "sucesso": "Password successfully reset! You can now log in.",
                 "token_expirado": "Error: The token has expired or is invalid.",
                 "pass_erradas": "Passwords do not match.",
-                "token_ausente": "Token missing. Use the link sent via email.",
+                "token_ausente": "Missing token. Please use the link sent to your email.",
                 "pass_nova": "New Password",
                 "confirmar_passnova": "Confirm New Password",
-                "guardar": "Saving Password...",
+                "guardar": "Saving Password",
                 "voltar": "Back to Login",
+                // forgot password
                 "mensagem_link": "If the email exists in our database, you will receive a recovery link.",
                 "mensagem_erro": "An error occurred while trying to process the request.",
                 "recup_title": "Recover Password",
@@ -250,20 +271,10 @@ const resources = {
                 "enviar": "Sending...",
                 "link": "Send Link"
             },
-            "header": {
-                "welcome": "Welcome",
-                "profile": "My Profile",
-                "logout": "Logout"
-            },
             "profile": {
                 "title": "My Profile",
-                "url": "Profile Picture URL",
-                "dados_pessoais": "Personal Information",
-                "username": "Username (Read-only)",
-                "primeiro": "First Name *",
-                "ultimo": "Last Name *",
-                "email": "Email *",
-                "telefone": "Phone Number",
+                "placeholder_url": "Ex: https://image-link.com/photo.jpg",
+                "dados_pessoais": "Personal Data",
                 "seguranca": "Security and Validation",
                 "confirmacao": "Confirm your identity to save changes.",
                 "pass_atual": "Current Password (Required) *",
@@ -281,29 +292,34 @@ const resources = {
                 "redirecionamento": "Back to Login",
                 "title": "Complete Registration",
                 "saudacao": "Welcome! Fill in your personal details to activate your new account.",
-                "username": "Username",
-                "pass": "Password",
-                "primeiro": "First Name",
-                "ultimo": "Last Name",
-                "telefone": "Phone Number",
-                "url": "Photo URL (Optional)",
                 "processar": "Processing...",
                 "ativar": "Activate my account",
-                "sucesso": "Account activated successfully! Redirecting to login...",
+                "sucesso": "Account successfully activated! Redirecting to login...",
                 "erro": "Error: The invitation link is invalid or has expired."
             },
-
             "menu": {
                 "dashboard": "Dashboard",
-                "leads": "Leads",
+                "leads": "Opportunities",
                 "clients": "Clients",
-                "chat": "Chat",
+                "chat": "Messages",
                 "admin": "Administration"
             },
             "dashboard": {
-                "title": "Summary Panel",
-                "total_leads": "Total leads",
-                "total_clients": "Total clients"
+                "title": "Summary Dashboard",
+                "aviso": "Warning",
+                "total_leads": "Total Leads",
+                "total_clients": "Total Clients",
+                "total_utilizadores": "Total Users",
+                "contas_ativas": "Active Accounts",
+                "distribuicao_leads": "Leads by Status",
+                "sem_dados": "No data to display",
+                "leads_user": "Leads by User",
+                "sem_lead": "No users with leads.",
+                "evolucao_temporal": "Temporal Evolution",
+                "sem_historico": "No history to display.",
+                "tooltip_leads": "Leads",
+                "tooltip_users": "Users",
+                "tooltip_qtd": "Quantity"
             },
             "form_modal": {
                 "editar_client": "Edit Client",
@@ -312,17 +328,17 @@ const resources = {
                 "adicionar_lead": "Add Lead",
                 "nome": "Name",
                 "email": "Email",
-                "telefone": "Phone Number",
+                "telefone": "Phone",
                 "empresa": "Company",
-                "titulo_lead": "Opportunity Title *",
+                "titulo_lead": "Opportunity Title",
                 "descricao": "Description",
                 "estado": "Status",
                 "cancelar": "Cancel",
                 "salvar": "Save Changes",
-                "adicionar": "Add",
+                "adicionar": "Add"
             },
             "leads": {
-                "title": "Opportunities Management",
+                "title": "Opportunity Management",
                 "add": "Add lead",
                 "filtrar": "Filter by status: ",
                 "filtro_todos": "All statuses",
@@ -332,16 +348,26 @@ const resources = {
                 "filtro_perdido": "Lost",
                 "filtro_proposta": "Proposal",
                 "carregar": "Loading leads...",
+                "vazio": "No leads found.",
+                "estado": {
+                    "novo": "New",
+                    "analise": "Under Review",
+                    "proposta": "Proposal",
+                    "ganho": "Won",
+                    "perdido": "Lost"
+                },
                 "detalhes": {
                     "titulo_pag": "Opportunity Details",
                     "voltar": "Back to List",
                     "carregar": "Loading details...",
+                    "lead_n_encontrada": "Opportunity not found.",
                     "label_titulo": "Title",
                     "label_descricao": "Description",
                     "label_estado": "Status",
                     "label_data": "Registration Date",
                     "btn_editar": "Edit Details",
                     "btn_remover": "Remove Lead",
+                    "alerta": "Lead removed",
                     "confirm_remover": "Are you sure you want to deactivate this record?"
                 }
             },
@@ -353,60 +379,69 @@ const resources = {
                     "titulo": "Client Details",
                     "voltar": "Back to List",
                     "carregar_detalhes": "Loading details...",
+                    "cliente_n_encontrado": "Client not found.",
                     "nome": "Name",
                     "email_contacto": "Contact Email",
-                    "telefone": "Phone Number",
+                    "telefone": "Phone",
                     "empresa": "Company",
                     "editar": "Edit Details",
                     "remover": "Remove Client",
                     "confirm_remover": "Are you sure you want to deactivate this client?",
-                    "alerta": "Client removed!",
+                    "alerta": "Client removed!"
                 }
-            },
-            "chat": {
-                "title": "Contacts",
-                "empty": "No contacts available.",
-                "chatMsg": "Chatting with:",
-                "placeholderMsg": "Type a message...",
-                "enviar": "Send",
-                "select_contacto": "Select a contact to start chatting."
             },
             "admin": {
                 "title": "User Management",
-                "convidar": "Invite New User",
+                "convidar": "Invite User",
                 "placeholder_email": "New user's email",
                 "enviando": "Sending...",
-                "enviar_convite": "Send Invitation",
+                "enviar_convite": "Send Invite",
+                "inviteMsg": "Invitation sent successfully!",
+                "erroMsg": "Error sending invitation.",
                 "carregar_utilizadores": "Loading users...",
+                "placeholder_pesquisa": "Type a username or email",
                 "ativo": "Active",
                 "inativo": "Inactive",
                 "lista_vazia": "No users found.",
-                "inviteMsg": "Invitation successfully sent to Email!",
-                "erroMsg": "Error sending invitation.",
-
                 "detalhes": {
-                    "titulo": "User Control Panel",
-                    "voltar": "Back to List",
                     "admin_tag": "Admin",
-                    "sem_email": "No email",
-                    "sem_telefone": "No phone",
-                    "inativar_conta": "Deactivate Account",
-                    "reativar_conta": "Reactivate Account",
-                    "excluir_conta": "Delete Account",
-                    "aviso_meu_perfil": "This is your profile. Use the Profile page for personal edits.",
-                    "carregar_dados": "Loading data...",
-                    "confirm_inativar_item": "Are you sure you want to deactivate this record?",
-                    "confirm_reativar_item": "Are you sure you want to reactivate this record?",
-                    "confirm_excluir_item": "WARNING: You will permanently delete this record and lose data. Continue?",
-                    "confirm_inativar_user": "Are you sure you want to deactivate the account of @{{username}}?",
-                    "confirm_reativar_user": "Are you sure you want to reactivate the account of @{{username}}?",
-                    "confirm_excluir_user": "EXPLOSIVE WARNING 💣: You will permanently delete @{{username}} and ALL their data. Continue?",
-                    "sucesso_excluir_user": "User permanently deleted!",
+                    "sem_email": "No Email",
+                    "sem_telefone": "No Phone"
+                }
+            },
+            "chat": {
+                "titulo": "Quick Messages",
+                "placeholder": "Type your message...",
+                "enviar": "Send",
+                "sem_mensagens": "No messages yet.",
+                "erro_ws": "Disconnected from chat. Attempting to reconnect..."
+            },
+            "admin_user_details": {
+                "titulo": "Account Details",
+                "btn_voltar": "Back",
+                "dados_pessoais": "Personal Data",
+                "email": "Email",
+                "telefone": "Phone",
+                "membro_desde": "Member since",
+                "permissoes": "Permissions and Status",
+                "conta_ativa": "Active Account",
+                "aviso_meu_perfil": "Go to My Profile to edit details",
+                "carregar_dados": "Loading data...",
+                "desativar_conta": "Deactivate Account",
+                "ativar_conta": "Activate Account",
+                "excluir_conta": "Remove Account",
+                "aviso_apagar": "Are you sure you want to permanently delete this account?",
+                "aviso_desativar": "Are you sure you want to deactivate this account?",
+                "tabs": {
+                    "clientes": "Clients ({{total}})",
+                    "leads": "Leads ({{total}})"
+                },
+                "botoes_lote": {
                     "label_clientes": "all clients",
                     "label_leads": "all leads",
                     "confirm_lote_inativar": "Are you sure you want to deactivate {{tipo}} for user @{{username}}?",
                     "confirm_lote_reativar": "Are you sure you want to reactivate {{tipo}} for user @{{username}}?",
-                    "confirm_lote_excluir": "EXPLOSIVE WARNING 💣: You will permanently delete {{tipo}}. Continue?"
+                    "confirm_lote_excluir": "EXPLOSIVE WARNING 💣: You are about to permanently delete {{tipo}}. Continue?"
                 },
                 "lista": {
                     "reativar_todos": "Reactivate all",
@@ -435,7 +470,7 @@ i18n
         lng: "pt", // Idioma inicial por defeito
         fallbackLng: "en", // Se faltar alguma palavra em PT, ele mostra em EN
         interpolation: {
-            escapeValue: false // O React já é seguro contra XSS, não precisamos disto
+            escapeValue: false // O React já previne XSS por defeito
         }
     });
 

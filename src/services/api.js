@@ -1,6 +1,7 @@
 import tokenStore from '../store/tokenStore';
 
 const BASE_URL = 'http://localhost:8080/projeto5/rest';
+const WS_BASE_URL = 'ws://localhost:8080/projeto5/ws';
 
 const apiRequest = async (endpoint, options = {}) => {
     const { token } = tokenStore.getState();
@@ -68,13 +69,12 @@ export const UserService = {
     forgotPassword: (email) => api.post('/users/forgot-password', { email }),
     resetPassword: (token, password) => api.post('/users/reset-password?token=' + token, { password }),
 
-    getActiveUsers: () => api.get('/users/ativos'),
 }
 
 export const AdminService = {
 
     inviteUser: (email) => api.post('/admin/users/invite', { email }),
-    getAllUsers: () => api.get('/admin/users'),
+    getAllUsers: (search = "") => api.get(`/admin/users${search ? `?search=${encodeURIComponent(search)}` : ''}`),
     getUserClients: (username) => api.get(`/admin/users/${username}/clients`),
     getUserLeads: (username) => api.get(`/admin/users/${username}/leads`),
     deleteUser: (username, permanente) => api.delete(`/admin/users/${username}?permanente=${permanente}`),
@@ -115,15 +115,14 @@ export const LeadService = {
 
 
 export const ChatService = {
-    // Busca o histórico de mensagens com uma pessoa específica
     getHistorico: (username) => api.get(`/chat/historico/${username}`),
-
-    // Envia uma nova mensagem via POST (REST)
     enviarMensagem: (destinatarioUsername, conteudo) => api.post('/chat/send', { destinatarioUsername, conteudo }),
-
-    // Marca as mensagens daquela pessoa como lidas
     marcarComoLidas: (username) => api.patch(`/chat/lidas/${username}`),
+    getContactos: () => api.get('/chat/contactos'),
 
-    // Busca o número total de notificações não lidas
-    getUnreadCount: () => api.get('/chat/unread'),
+    getWebSocketUrl: (token) => `${WS_BASE_URL}/chat/${token}`,
 }
+
+export const NotificationService = {
+    getWebSocketUrl: (token) => `${WS_BASE_URL}/notifications/${token}`,
+};

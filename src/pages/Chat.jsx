@@ -1,109 +1,200 @@
 import { useState, useEffect, useRef } from 'react';
-import useUserStore from "../store/useUserStore.js";
-import { ChatService, UserService } from '../services/api';
+import { useNavigate } from 'react-router-dom';
+import { ChatService } from '../services/api';
 import '../styles/Chat.css';
 import { useTranslation } from "react-i18next";
+import ChatSidebar from '../components/chat/ChatSidebar.jsx';
+import ChatWindow from '../components/chat/ChatWindow.jsx';
 
 export default function Chat() {
+    const navigate = useNavigate();
+    const { t } = useTranslation();
+
+    // --- ESTADOS ---
     const [utilizadores, setUtilizadores] = useState([]);
     const [chatAtivo, setChatAtivo] = useState(null);
     const [mensagens, setMensagens] = useState([]);
     const [novaMensagem, setNovaMensagem] = useState('');
-
-    // NOVO ESTADO: Controla a vista no telemóvel (se mostra contactos ou mensagens)
     const [mostrarMensagensMobile, setMostrarMensagensMobile] = useState(false);
 
+    // --- REFERÊNCIAS ---
+    const chatAtivoRef = useRef(null);
     const ws = useRef(null);
     const mensagensFimRef = useRef(null);
-    const setUnreadCount = useUserStore((state) => state.setUnreadCount);
-
-    const { t, i18n } = useTranslation();
 
     useEffect(() => {
-        UserService.getActiveUsers()
+        chatAtivoRef.current = chatAtivo;
+    }, [chatAtivo]);
+
+    // --- CARREGAMENTO INICIAL E WEBSOCKET ---
+    useEffect(() => {
+        // 1. Carrega os utilizadores já ordenados pelo Java
+        ChatService.getContactos()
             .then(res => setUtilizadores(res))
             .catch(console.error);
 
         const token = localStorage.getItem('token');
         let pingInterval;
 
+        // 2. Se houver token, liga o WebSocket
         if (token) {
-            ws.current = new WebSocket(`ws://localhost:8080/projeto5/ws/chat/${token}`);
+            const socket = new WebSocket(ChatService.getWebSocketUrl(token));
+            ws.current = socket;
 
-            ws.current.onopen = () => {
+            socket.onopen = () => {
                 console.log("🟢 WebSocket Ligado ao Chat!");
                 pingInterval = setInterval(() => {
-                    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-                        ws.current.send("PING");
+                    if (socket.readyState === WebSocket.OPEN) {
+                        socket.send("PING");
                     }
                 }, 60000);
             };
 
-            ws.current.onmessage = (event) => {
-                const dados = JSON.parse(event.data);
-                if (dados.type === 'NEW_MESSAGE') {
-                    const novaMsg = dados.payload;
+            socket.onmessage = (event) => {
+                try {
+                    const dados = JSON.parse(event.data);
+                    const novaMsg = dados.payload ? dados.payload : dados;
 
-                    setChatAtivo((chatAtual) => {
-                        if (chatAtual && chatAtual.username === novaMsg.remetenteUsername) {
-                            setMensagens((prev) => [...prev, novaMsg]);
-                            ChatService.marcarComoLidas(chatAtual.username);
-                        } else {
-                            setUtilizadores((prevUsers) =>
-                                prevUsers.map(u =>
-                                    u.username === novaMsg.remetenteUsername
-                                        ? { ...u, unreadCount: (u.unreadCount || 0) + 1 }
-                                        : u
-                                )
-                            );
-                        }
-                        return chatAtual;
-                    });
+                    if (!novaMsg.remetenteUsername) return;
+
+                    const chatAtual = chatAtivoRef.current;
+
+                    if (chatAtual && chatAtual.username === novaMsg.remetenteUsername) {
+                        // O chat está ABERTO com esta pessoa
+                        setMensagens((prev) => {
+                            const msgFinal = { ...novaMsg, id: novaMsg.id || Date.now() };
+                            if (prev.some(m => m.id === msgFinal.id)) return prev;
+                            return [...prev, msgFinal];
+                        });
+
+                        // Marca como lidas e DEPOIS pede ao Java a lista de contactos fresca
+                        ChatService.marcarComoLidas(chatAtual.username)
+                            .then(() => ChatService.getContactos())
+                            .then(res => setUtilizadores(res))
+                            .catch(console.error);
+                    } else {
+                        // 🚀 A MAGIA: O chat NÃO está aberto. Pedimos ao Java a lista fresca!
+                        // Ela já vem ordenada e com os números exatos e não duplicados.
+                        ChatService.getContactos()
+                            .then(res => setUtilizadores(res))
+                            .catch(console.error);
+                    }
+
+                } catch (error) {
+                    console.error("Erro ao processar mensagem do WebSocket:", error);
                 }
             };
 
-            ws.current.onclose = (event) => {
-                console.log("🔴 WebSocket Desligado.");
+            socket.onclose = (event) => {
+                console.log("🔴 WebSocket Desligado. Código:", event.code);
                 clearInterval(pingInterval);
 
-                // Se o código de fecho for 4001 (ou outro que definas no Java)
-                // ou se o token simplesmente desapareceu da store
-                const { token } = tokenStore.getState();
-                if (!token) {
-                    // Redireciona para o login com o estado de erro
-                    navigate('/login', { state: { erro: t('login.sessao_expirada') } });
+                if (event.code !== 1000) {
+                    const currentToken = localStorage.getItem('token');
+                    if (!currentToken) {
+                        navigate('/login', { state: { erro: t('geral.sessao_expirada') } });
+                    }
                 }
+            };
+
+            socket.onerror = (error) => {
+                console.error("⚠️ Erro no WebSocket:", error);
             };
         }
 
+        // 3. Função de Limpeza
         return () => {
-            if (ws.current) ws.current.close();
             if (pingInterval) clearInterval(pingInterval);
+
+            if (ws.current) {
+                const socket = ws.current;
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.onopen = null;
+                    socket.onmessage = null;
+                    socket.onclose = null;
+                    socket.onerror = null;
+                    socket.close(1000, 'Cleanup React');
+                } else if (socket.readyState === WebSocket.CONNECTING) {
+                    socket.onopen = () => {
+                        socket.close(1000, 'Cleanup React StrictMode');
+                    };
+                    socket.onmessage = null;
+                    socket.onclose = null;
+                    socket.onerror = null;
+                }
+                ws.current = null;
+            }
         };
     }, []);
 
+    // --- SINCRONIZAÇÃO DE MENSAGENS ---
     useEffect(() => {
+        let intervaloSync;
+
         if (chatAtivo) {
+            const carregarHistorico = () => {
+                ChatService.getHistorico(chatAtivo.username)
+                    .then(res => {
+                        setMensagens(prev => {
+                            const prevIds = prev.map(m => m.id).join(',');
+                            const resIds = res.map(m => m.id).join(',');
+                            const lidasMudaram = res.some((m, i) => prev[i] && m.lida !== prev[i].lida);
+                            const mudou = prevIds !== resIds || lidasMudaram;
+                            return mudou ? res : prev;
+                        });
+                    })
+                    .catch(console.error);
+            };
+
             ChatService.getHistorico(chatAtivo.username)
                 .then(res => setMensagens(res))
                 .catch(console.error);
 
             ChatService.marcarComoLidas(chatAtivo.username).catch(console.error);
+
+            intervaloSync = setInterval(() => {
+                carregarHistorico();
+            }, 3000);
         }
+
+        return () => {
+            if (intervaloSync) clearInterval(intervaloSync);
+        };
     }, [chatAtivo]);
 
     useEffect(() => {
-        mensagensFimRef.current?.scrollIntoView({ behavior: 'smooth' });
+        mensagensFimRef.current?.scrollIntoView({ behavior: 'auto' });
     }, [mensagens]);
 
+    // --- AÇÕES DO CHAT ---
     const handleEnviar = async (e) => {
         e.preventDefault();
         if (!novaMensagem.trim() || !chatAtivo) return;
 
+        const textoEnviado = novaMensagem;
+        setNovaMensagem('');
+
         try {
-            const res = await ChatService.enviarMensagem(chatAtivo.username, novaMensagem);
-            setMensagens((prev) => [...prev, res]);
-            setNovaMensagem('');
+            const res = await ChatService.enviarMensagem(chatAtivo.username, textoEnviado);
+
+            setMensagens((prev) => {
+                const msgFinal = (res && typeof res === 'object' && res.conteudo) ? res : {
+                    id: Date.now(),
+                    conteudo: textoEnviado,
+                    destinatarioUsername: chatAtivo.username,
+                    dataEnvio: new Date().toISOString(),
+                    lida: false
+                };
+
+                if (msgFinal.id && prev.some(m => m.id === msgFinal.id)) return prev;
+                return [...prev, msgFinal];
+            });
+
+            // 🚀 Atualizar a lista diretamente do Java após enviar!
+            ChatService.getContactos()
+                .then(res => setUtilizadores(res))
+                .catch(console.error);
+
         } catch (error) {
             console.error("Erro ao enviar:", error);
         }
@@ -111,7 +202,7 @@ export default function Chat() {
 
     const handleSelecionarChat = (user) => {
         setChatAtivo(user);
-        setMostrarMensagensMobile(true); // Activa a vista de mensagens no mobile
+        setMostrarMensagensMobile(true);
         setUtilizadores((prevUsers) =>
             prevUsers.map(u =>
                 u.username === user.username ? { ...u, unreadCount: 0 } : u
@@ -119,97 +210,30 @@ export default function Chat() {
         );
     };
 
-    // Função para o botão voltar no telemóvel
     const handleVoltarLista = () => {
         setMostrarMensagensMobile(false);
-        // Opcional: setChatAtivo(null) se quiseres desmarcar o contacto ao voltar
+        setChatAtivo(null); // Esquece a pessoa ao voltar
     };
 
     return (
         <div className="chat-container">
+            <ChatSidebar
+                utilizadores={utilizadores}
+                chatAtivo={chatAtivo}
+                onSelectChat={handleSelecionarChat}
+                isMobileHidden={mostrarMensagensMobile}
+            />
 
-            {/* BARRA LATERAL: Adicionada classe dinâmica para controlar a visibilidade mobile */}
-            <div className={`chat-sidebar ${mostrarMensagensMobile ? 'mobile-hide' : ''}`}>
-                <h3>{t('chat.title')}</h3>
-
-                {utilizadores.length === 0 && <p className="chat-empty-text">{t('chat.empty')}</p>}
-
-                {utilizadores.map((user) => (
-                    <div
-                        key={user.username}
-                        onClick={() => handleSelecionarChat(user)}
-                        className={`chat-contact-item ${chatAtivo?.username === user.username ? 'chat-contact-active' : ''}`}
-                    >
-                        <div className="chat-contact-info">
-                            <span className="chat-contact-name">{user.primeiroNome} {user.ultimoNome}</span>
-                            <span className="chat-contact-username">@{user.username}</span>
-                        </div>
-
-                        {user.unreadCount > 0 && (
-                            <span className="chat-unread-badge">
-                                {user.unreadCount}
-                            </span>
-                        )}
-                    </div>
-                ))}
-            </div>
-
-            {/* JANELA DE CONVERSA: Adicionada classe dinâmica para controlar a visibilidade mobile */}
-            <div className={`chat-main ${!mostrarMensagensMobile ? 'mobile-hide' : ''}`}>
-                {chatAtivo ? (
-                    <>
-                        <div className="chat-header">
-                            {/* NOVO: Botão Voltar (só aparece no CSS mobile) */}
-                            <button className="chat-back-btn" onClick={handleVoltarLista}>
-                                <i className="fa-solid fa-arrow-left"></i>
-                            </button>
-                            <span className="chat-header-title">
-                                {t('chat.chatMsg')} <strong>{chatAtivo.username}</strong>
-                            </span>
-                        </div>
-
-                        <div className="chat-messages">
-                            {mensagens.map((msg, index) => {
-                                const souEu = msg.destinatarioUsername === chatAtivo.username;
-                                return (
-                                    <div key={index} className={`chat-message-wrapper ${souEu ? 'message-mine' : 'message-theirs'}`}>
-                                        <div className={`chat-bubble ${souEu ? 'bubble-mine' : 'bubble-theirs'}`}>
-                                            {msg.conteudo}
-                                        </div>
-                                        <div className="chat-time">
-                                            {new Date(msg.dataEnvio).toLocaleTimeString()}
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                            <div ref={mensagensFimRef} />
-                        </div>
-
-                        <form onSubmit={handleEnviar} className="chat-input">
-                            <input
-                                type="text"
-                                value={novaMensagem}
-                                onChange={(e) => setNovaMensagem(e.target.value)}
-                                placeholder={t('chat.placeholderMsg')}
-                                className="chat-input-field"
-                            />
-                            <button
-                                type="submit"
-                                className="chat-send-btn"
-                                disabled={!novaMensagem.trim()}
-                                title={t('chat.enviar')}
-                            >
-                                <i className="fa-solid fa-paper-plane"></i>
-                            </button>
-                        </form>
-                    </>
-                ) : (
-                    <div className="chat-no-selection">
-                        <i className="fa-regular fa-comments"></i>
-                        <p>{t('chat.select_contacto')}</p>
-                    </div>
-                )}
-            </div>
+            <ChatWindow
+                chatAtivo={chatAtivo}
+                mensagens={mensagens}
+                novaMensagem={novaMensagem}
+                setNovaMensagem={setNovaMensagem}
+                onEnviar={handleEnviar}
+                onVoltar={handleVoltarLista}
+                isMobileHidden={mostrarMensagensMobile}
+                mensagensFimRef={mensagensFimRef}
+            />
         </div>
     );
 }

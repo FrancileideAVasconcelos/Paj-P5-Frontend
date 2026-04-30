@@ -14,11 +14,10 @@ const useAdminStore = create((set, get) => ({
     loadingDetails: false,
 
     // --- FUNÇÕES DA LISTA GERAL ---
-
-    fetchUsers: async (token) => {
+    fetchUsers: async (token, search = '') => { // Adicionámos o 'search' aqui
         set({ loading: true, error: null });
         try {
-            const response = await AdminService.getAllUsers();
+            const response = await AdminService.getAllUsers(search); // Passamos para a API
             set({ users: response, loading: false });
         } catch (error) {
             set({ error: error.message || "Erro ao carregar utilizadores", loading: false });

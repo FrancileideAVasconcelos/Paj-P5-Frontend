@@ -4,6 +4,7 @@ import tokenStore from "../store/tokenStore.js";
 import useUserStore from "../store/useUserStore.js";
 import { api } from "../services/api.js";
 import { useTranslation } from "react-i18next";
+import { STATUS_OPTIONS} from "../utils/constants.js";
 import '../styles/Dashboard.css';
 
 import {
@@ -57,17 +58,24 @@ export default function Dashboard() {
     const dadosLeadsPorEstado = useMemo(() => {
         if (!stats?.leads || stats.leads.length === 0) return [];
         const contagem = {};
-        const nomesDosEstados = ["Novo", "Em análise", "Proposta", "Ganho", "Perdido"];
 
         stats.leads.forEach(lead => {
             const estadoId = Number(lead.estado);
             if (!contagem[estadoId]) {
-                contagem[estadoId] = { name: nomesDosEstados[estadoId] || `Estado ${estadoId}`, value: 0 };
+                // Vai buscar a chave ao constants.js e traduz!
+                const nomeEstado = STATUS_OPTIONS[estadoId]
+                    ? t(STATUS_OPTIONS[estadoId].key)
+                    : `Estado ${estadoId}`;
+
+                contagem[estadoId] = { name: nomeEstado, value: 0 };
             }
             contagem[estadoId].value += 1;
         });
         return Object.values(contagem);
-    }, [stats]);
+
+        // Atenção: Adicionei o 't' ao array de dependências para o gráfico atualizar
+        // se o utilizador mudar a língua da página no cabeçalho!
+    }, [stats, t]);
 
     // 2. Evolução Combinada (Leads + Utilizadores no mesmo gráfico!)
     const evolucaoCombinadaData = useMemo(() => {
@@ -98,13 +106,13 @@ export default function Dashboard() {
         : [];
 
 
-    if (!stats) return <p style={{padding: '20px', textAlign: 'center'}}>A carregar painel...</p>;
+    if (!stats) return <p style={{padding: '20px', textAlign: 'center'}}>{t('dashboard.a_carregar')}</p>;
 
     return (
         <div>
             {mensagemErro && (
                 <div className="alert-error" style={{ color: 'red', padding: '15px', backgroundColor: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '8px', marginBottom: '20px' }}>
-                    <strong><i className="fa-solid fa-triangle-exclamation"></i> Aviso:</strong> {mensagemErro}
+                    <strong><i className="fa-solid fa-triangle-exclamation"></i> {t('dashboard.aviso')} :</strong> {mensagemErro}
                 </div>
             )}
 
@@ -172,8 +180,7 @@ export default function Dashboard() {
                                         <YAxis allowDecimals={false} tick={{fill: '#64748b'}} axisLine={false} tickLine={false} />
                                         <RechartsTooltip cursor={{fill: '#f1f5f9'}} borderRadius={8} />
 
-                                        <Bar dataKey="quantidade" name="Quantidade" fill="#8b5cf6" radius={[6, 6, 0, 0]} barSize={40} />
-                                    </BarChart>
+                                        <Bar dataKey="quantidade" name={t('dashboard.tooltip_qtd')} fill="#8b5cf6" radius={[6, 6, 0, 0]} barSize={40} />                                    </BarChart>
                                 ) : (<p style={{color: '#94a3b8', textAlign: 'center', marginTop: '100px'}}>{t('dashboard.sem_lead')}</p>)}
                             </div>
                         </div>
@@ -182,7 +189,7 @@ export default function Dashboard() {
 
                 {/* --- GRÁFICO INFERIOR DE LARGURA TOTAL (Evolução Temporal) --- */}
                 <div className="chart-card" style={{ marginTop: '20px' }}>
-                    <h3><i className="fa-solid fa-chart-line"></i> Evolução Temporal</h3>
+                    <h3><i className="fa-solid fa-chart-line"></i>{t('dashboard.evolucao_temporal')}</h3>
                     {/* A altura é definida aqui, e o ResponsiveContainer preenche 100% */}
                     <div className="chart-wrapper" style={{ width: '100%', height: '350px' }}>
                         {evolucaoCombinadaData.length > 0 ? (
@@ -194,11 +201,10 @@ export default function Dashboard() {
                                     <RechartsTooltip borderRadius={8} />
                                     <Legend verticalAlign="bottom" height={36} iconType="plainline" />
 
-                                    <Line type="monotone" name="Leads" dataKey="leads" stroke="#0ea5e9" strokeWidth={3} dot={{ r: 4, fill: '#0ea5e9' }} activeDot={{ r: 6 }} />
+                                    <Line type="monotone" name={t('dashboard.tooltip_leads')} dataKey="leads" stroke="#0ea5e9" strokeWidth={3} dot={{ r: 4, fill: '#0ea5e9' }} activeDot={{ r: 6 }} />
 
                                     {isAdmin && (
-                                        <Line type="monotone" name="Utilizadores" dataKey="users" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, fill: '#f59e0b' }} activeDot={{ r: 6 }} />
-                                    )}
+                                        <Line type="monotone" name={t('dashboard.tooltip_users')} dataKey="users" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, fill: '#f59e0b' }} activeDot={{ r: 6 }} />                                    )}
                                 </LineChart>
                             </ResponsiveContainer>
                         ) : (<p style={{color: '#94a3b8', textAlign: 'center', marginTop: '120px'}}>{t('dashboard.sem_historico')}</p>)}

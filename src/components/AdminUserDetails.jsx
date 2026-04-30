@@ -198,9 +198,9 @@ export default function AdminUserDetails() {
     return (
         <div className="admin-container" style={{ maxWidth: '1100px' }}>
             <div className="details-header">
-                <h2>{t('admin.detalhes.titulo')}</h2>
+                <h2>{t('admin_user_details.titulo')}</h2>
                 <button className="btn-back" onClick={() => navigate('/admin')} style={{ marginBottom: 0 }}>
-                    <i className="fa-solid fa-arrow-left"></i> {t('admin.detalhes.voltar')}
+                    <i className="fa-solid fa-arrow-left"></i> {t('admin_user_details.btn_voltar')}
                 </button>
             </div>
 
@@ -231,19 +231,19 @@ export default function AdminUserDetails() {
                                 onClick={handleToggleUserStatus}
                             >
                                 <i className={`fa-solid ${selectedUser.ativo ? 'fa-user-slash' : 'fa-user-check'}`}></i>
-                                {selectedUser.ativo ? t('admin.detalhes.inativar_conta') : t('admin.detalhes.reativar_conta')}
+                                {selectedUser.ativo ? t('admin_user_details.desativar_conta') : t('admin_user_details.ativar_conta')}
                             </button>
                             <button
                                 className="btn-save-red"
                                 style={{ justifyContent: 'center' }}
                                 onClick={handleDeleteUserPermanent}
                             >
-                                <i className="fa-solid fa-trash"></i> {t('admin.detalhes.excluir_conta')}
+                                <i className="fa-solid fa-trash"></i> {t('admin_user_details.excluir_conta')}
                             </button>
                         </>
                     ) : (
                         <p style={{ color: '#666', fontSize: '14px', fontStyle: 'italic' }}>
-                            {t('admin.detalhes.aviso_meu_perfil')}
+                            {t('admin_user_details.aviso_meu_perfil')}
                         </p>
                     )}
                 </div>
@@ -251,7 +251,7 @@ export default function AdminUserDetails() {
 
             {/* LISTAGENS DE DADOS (CLIENTES E LEADS) */}
             {loadingDetails ? (
-                <p className="loading-text">{t('admin.detalhes.carregar_dados')}</p>
+                <p className="loading-text">{t('admin_user_details.carregar_dados')}</p>
             ) : (
                 <div className="data-cards-container">
                     {/* Lista de Clientes com ações administrativas unificadas */}

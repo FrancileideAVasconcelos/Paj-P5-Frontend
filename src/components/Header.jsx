@@ -11,6 +11,7 @@ import tokenStore from "../store/tokenStore.js";
 import useUserStore from '../store/useUserStore.js';
 import {useNavigate} from "react-router-dom";
 import { useTranslation } from 'react-i18next';
+import { NotificationService } from '../services/api';
 
 /**
  * Componente funcional que renderiza a barra superior da interface.
@@ -33,10 +34,18 @@ export default function Header({ toggleMenu }) {
 
     // --- ZUSTAND E TOKENS ---
     const currentUser = useUserStore((state) => state.currentUser);
+    const fetchCurrentUser = useUserStore((state) => state.fetchCurrentUser); // <-- ADICIONA ESTA LINHA
     const unreadCount = useUserStore((state) => state.unreadCount);
     const setUnreadCount = useUserStore((state) => state.setUnreadCount);
     const token = tokenStore((state) => state.token);
     const wsNotif = useRef(null);
+
+    // --- GARANTIR QUE O UTILIZADOR ESTÁ CARREGADO ---
+    useEffect(() => {
+        if (token && !currentUser) {
+            fetchCurrentUser();
+        }
+    }, [token, currentUser, fetchCurrentUser]);
 
     // --- LIGAÇÃO GLOBAL DE NOTIFICAÇÕES ---
     useEffect(() => {
@@ -44,7 +53,7 @@ export default function Header({ toggleMenu }) {
 
         let pingInterval;
         // Variável local — nunca muda dentro deste closure
-        const ws = new WebSocket(`ws://localhost:8080/projeto5/ws/notifications/${token}`);
+        const ws = new WebSocket(NotificationService.getWebSocketUrl(token));
         wsNotif.current = ws;
 
         ws.onopen = () => {
