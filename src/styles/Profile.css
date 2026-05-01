@@ -1,0 +1,97 @@
+/* src/styles/Profile.css */
+
+.profile-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* --- NOVO: Layout de Linha Dividida (Gráfico à Esquerda, Avatar à Direita) --- */
+.profile-top-row {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+    align-items: stretch; /* Faz com que as duas colunas tenham a mesma altura */
+}
+
+.profile-left-col, .profile-right-col {
+    flex: 1; /* Dividem o espaço 50/50 */
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- ESTILOS DO CARTÃO DO GRÁFICO (Esquerda) --- */
+.profile-chart-card {
+    background-color: #f8fafc;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%; /* Ocupa a altura toda da coluna */
+    justify-content: center;
+}
+
+.profile-chart-title {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    color: #334155;
+    align-self: flex-start;
+    width: 100%;
+}
+
+.profile-chart-container {
+    width: 100%;
+    max-width: 200px;
+    height: 160px;
+    display: flex;
+    justify-content: center;
+}
+
+/* --- ESTILOS DO FORMULÁRIO E AVATAR (Direita) --- */
+.profile-avatar-container {
+    background-color: #f8fafc;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%; /* Ocupa a altura toda da coluna */
+    justify-content: center;
+}
+
+.profile-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #2c3e50;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.profile-divider {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 20px 0;
+}
+
+.profile-section-title {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 18px;
+}
+
+.profile-security-hint {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 768px) {
+    .profile-top-row {
+        flex-direction: column-reverse; /* No telemóvel, o avatar fica por cima do gráfico */
+        gap: 20px;
+    }
+}

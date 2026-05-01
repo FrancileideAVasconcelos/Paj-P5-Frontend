@@ -24,6 +24,20 @@ const useAdminStore = create((set, get) => ({
         }
     },
 
+    editUserAdmin: async (token, username, userData) => {
+        try {
+            await AdminService.editUser(username, userData);
+            set((state) => ({
+                // Atualiza os dados na lista de utilizadores em memória
+                users: state.users.map(u => u.username === username ? { ...u, ...userData } : u)
+            }));
+            return true;
+        } catch (error) {
+            console.error("Erro ao editar utilizador:", error);
+            return false;
+        }
+    },
+
     deleteUser: async (token, username, permanente = false) => {
         try {
             await AdminService.deleteUser(username, permanente);

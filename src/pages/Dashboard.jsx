@@ -123,12 +123,12 @@ export default function Dashboard() {
 
                 {/* --- CARTÕES SUPERIORES --- */}
                 <div className="stats-grid">
-                    <div className="stat-card">
+                    <div className="stat-card clickable" onClick={() => navigate('/leads')}>
                         <div className="stat-icon"><i className="fa-solid fa-bullseye" style={{color: '#0ea5e9'}}></i></div>
                         <div><h3>{t('dashboard.total_leads')}</h3><p className="stat-number">{stats.totalLeads}</p></div>
                     </div>
 
-                    <div className="stat-card">
+                    <div className="stat-card clickable" onClick={() => navigate('/client')}>
                         <div className="stat-icon"><i className="fa-solid fa-users" style={{color: '#10b981'}}></i></div>
                         <div><h3>{t('dashboard.total_clients')}</h3><p className="stat-number">{stats.totalClients}</p></div>
                     </div>
@@ -153,18 +153,48 @@ export default function Dashboard() {
                     {/* GRÁFICO 1: Leads por Estado (Tarte) */}
                     <div className="chart-card">
                         <h3><i className="fa-solid fa-chart-pie"></i> {t('dashboard.distribuicao_leads')}</h3>
-                        <div className="chart-wrapper" style={{ width: '100%', height: '300px', display: 'flex', justifyContent: 'center' }}>
+                        <div className="chart-wrapper" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             {dadosLeadsPorEstado.length > 0 ? (
-                                <PieChart width={400} height={280}>
-                                    <Pie data={dadosLeadsPorEstado} cx="50%" cy="50%" innerRadius={70} outerRadius={95} paddingAngle={5} dataKey="value" stroke="none">
+                                <>
+                                    <PieChart width={300} height={220}>
+                                        <Pie
+                                            data={dadosLeadsPorEstado}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={70}
+                                            outerRadius={95}
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                            stroke="none"
+                                        >
+                                            {dadosLeadsPorEstado.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={CORES_TARTE[index % CORES_TARTE.length]} />
+                                            ))}
+                                        </Pie>
+                                        <RechartsTooltip borderRadius={8} />
+                                    </PieChart>
+
+                                    {/* Legenda manual fora do PieChart */}
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px 16px', paddingTop: '8px' }}>
                                         {dadosLeadsPorEstado.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={CORES_TARTE[index % CORES_TARTE.length]} />
+                                            <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#64748b' }}>
+                            <span style={{
+                                width: '10px',
+                                height: '10px',
+                                borderRadius: '50%',
+                                backgroundColor: CORES_TARTE[index % CORES_TARTE.length],
+                                flexShrink: 0
+                            }} />
+                                                {entry.name}
+                                            </div>
                                         ))}
-                                    </Pie>
-                                    <RechartsTooltip borderRadius={8} />
-                                    <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                                </PieChart>
-                            ) : (<p style={{color: '#94a3b8', textAlign: 'center', marginTop: '100px'}}>{t('dashboard.sem_dados')}</p>)}
+                                    </div>
+                                </>
+                            ) : (
+                                <p style={{ color: '#94a3b8', textAlign: 'center', marginTop: '100px' }}>
+                                    {t('dashboard.sem_dados')}
+                                </p>
+                            )}
                         </div>
                     </div>
 

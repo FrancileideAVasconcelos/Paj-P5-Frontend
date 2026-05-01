@@ -13,6 +13,8 @@ import FormModal from "./formModal.jsx";
 import useFormModal from "../hooks/useFormModal.js";
 import '../styles/ClientLead.css';
 import {useTranslation} from "react-i18next";
+import useUserStore from '../store/useUserStore.js';
+import { AdminService } from '../services/api.js';
 
 /**
  * Componente funcional que exibe os detalhes de um Cliente.
@@ -35,12 +37,27 @@ export default function ClientDetails() {
     /** @type {Object} Dados do cliente atual e funções de manipulação provenientes da store. */
     const { currentClient, fetchClientById, softDeleteClient, updateClient, loading } = useClientStore();
 
-    /** * Hook personalizado para gerir o modal de edição de clientes.
-     * @type {Object}
-     * @property {Function} abrirParaEditar - Prepara o modal com os dados do cliente carregado.
-     */
-    const modalProps = useFormModal(async () => {}, updateClient, token);
+    const currentUser = useUserStore((state) => state.currentUser);
+    const isAdmin = currentUser?.admin;
 
+    const modalProps = useFormModal(
+        async () => {},
+        async (t, id, data) => {
+            if (isAdmin) {
+                try {
+                    await AdminService.editClient(id, data);
+                    fetchClientById(token, id);
+                    return true;
+                } catch (e) {
+                    console.error(e);
+                    return false;
+                }
+            } else {
+                return await updateClient(t, id, data);
+            }
+        },
+        token
+    );
     /**
      * Efeito de carregamento: Procura os detalhes do cliente no servidor
      * sempre que o ID ou o token de autenticação mudarem.
@@ -58,10 +75,47 @@ export default function ClientDetails() {
      */
     const handleRemover = async () => {
         if (window.confirm(t('clients.detalhes.confirm_remover'))){
-            const sucesso = await softDeleteClient(token, id);
-            if (sucesso) {
-                alert(t('clients.detalhes.alerta'));
-                navigate('/client');
+            if (isAdmin) {
+                try {
+                    // O Admin usa a rota de toggleItemStatus que já faz o soft delete (permanente=false)
+                    await AdminService.toggleItemStatus('client', id, true);
+                    alert(t('clients.detalhes.alerta'));
+                    navigate('/client');
+                } catch (error) {
+                    alert("Erro ao inativar cliente.");
+                }
+            } else {
+                // Utilizadores normais usam o método da store
+                const sucesso = await softDeleteClient(token, id);
+                if (sucesso) {
+                    alert(t('clients.detalhes.alerta'));
+                    navigate('/client');
+                }
+            }
+        }
+    };
+
+    const handleDeletePermanent = async () => {
+        if (window.confirm("Tem a certeza absoluta que deseja apagar este Cliente PERMANENTEMENTE?")) {
+            try {
+                await AdminService.deleteItemPermanent('client', id);
+                alert("Cliente apagado permanentemente!");
+                navigate(-1);
+            } catch (e) {
+                alert("Erro ao apagar cliente.");
+            }
+        }
+    };
+
+    const handleReativar = async () => {
+        if (window.confirm("Deseja reativar este Cliente?")) {
+            try {
+                // Passa 'false' porque a API toggleItemStatus recebe 'isAtivo' (que é falso atualmente)
+                await AdminService.toggleItemStatus('client', id, false);
+                alert("Cliente reativado com sucesso!");
+                fetchClientById(token, id); // Atualiza os dados no ecrã sem mudar de página
+            } catch (error) {
+                alert("Erro ao reativar cliente.");
             }
         }
     };
@@ -80,11 +134,12 @@ export default function ClientDetails() {
             <div className="form-container">
                 <h3 className="form-title">{t('clients.detalhes.titulo')}</h3>
                 <div className="custom-form">
-                    {/* Exibição dos dados do Cliente em formato estático */}
-                    <div className="form-group">
-                        <label>{t('clients.detalhes.nome')}</label>
-                        <p className="static-data">{currentClient.nome}</p>
-                    </div>
+                    {isAdmin && (
+                        <div className="form-group" style={{ borderBottom: '2px dashed #e2e8f0', paddingBottom: '15px', marginBottom: '15px' }}>
+                            <label style={{ color: '#3498db' }}><i className="fa-solid fa-crown"></i> Dono do Registo (Utilizador)</label>
+                            <p className="static-data" style={{ fontWeight: 'bold' }}>@{currentClient.dono}</p>
+                        </div>
+                    )}
 
                     <div className="form-group">
                         <label>{t('clients.detalhes.email_contacto')}</label>
@@ -101,14 +156,31 @@ export default function ClientDetails() {
                         <p className="static-data">{currentClient.empresa}</p>
                     </div>
 
-                    {/* Ações de Gestão do Cliente */}
                     <div className="form-actions">
                         <button onClick={(e) => modalProps.abrirParaEditar(e, currentClient)} className="btn-save">
                             <i className="fa-solid fa-pen"></i> {t('clients.detalhes.editar')}
                         </button>
-                        <button onClick={handleRemover} className="btn-save-red">
-                            <i className="fa-solid fa-trash-can"></i> {t('clients.detalhes.remover')}
-                        </button>
+
+                        {isAdmin ? (
+                            <>
+                                {currentClient.ativo ? (
+                                    <button onClick={handleRemover} className="btn-save-red" style={{ backgroundColor: '#f39c12' }}>
+                                        <i className="fa-solid fa-ban"></i> Inativar Cliente
+                                    </button>
+                                ) : (
+                                    <button onClick={handleReativar} className="btn-save" style={{ backgroundColor: '#27ae60' }}>
+                                        <i className="fa-solid fa-folder-open"></i> Reativar Cliente
+                                    </button>
+                                )}
+                                <button onClick={handleDeletePermanent} className="btn-save-red">
+                                    <i className="fa-solid fa-fire"></i> Apagar Permanente
+                                </button>
+                            </>
+                        ) : (
+                            <button onClick={handleRemover} className="btn-save-red">
+                                <i className="fa-solid fa-trash-can"></i> {t('clients.detalhes.remover')}
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

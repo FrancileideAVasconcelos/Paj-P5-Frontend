@@ -14,6 +14,8 @@ import useFormModal from "../hooks/useFormModal.js";
 import FormModal from "./formModal.jsx";
 import '../styles/ClientLead.css';
 import {useTranslation} from "react-i18next";
+import useUserStore from '../store/useUserStore.js'; // PARA SABER SE É ADMIN
+import { AdminService } from '../services/api.js'; // PARA FAZER CHAMADAS DE ADMIN
 
 /**
  * Componente funcional que exibe os detalhes de uma Lead.
@@ -40,7 +42,9 @@ export default function LeadDetails() {
      * @type {Object}
      * @property {Function} abrirParaEditar - Prepara o modal com os dados da lead atual.
      */
-    const modalProps = useFormModal(async () => {}, updateLead, token);
+
+    const currentUser = useUserStore((state) => state.currentUser);
+    const isAdmin = currentUser?.admin;
 
     /**
      * Efeito de carregamento: Procura os detalhes da lead no servidor
@@ -59,10 +63,70 @@ export default function LeadDetails() {
      */
     const handleRemover = async () => {
         if (window.confirm(t('leads.detalhes.confirm_remover'))) {
-            const sucesso = await softDeleteLead(token, id);
-            if (sucesso) {
-                alert(t('leads.detalhes.alerta'));
-                navigate('/leads');
+            if (isAdmin) {
+                try {
+                    // O Admin usa a rota de toggleItemStatus que já faz o soft delete (permanente=false)
+                    await AdminService.toggleItemStatus('lead', id, true);
+                    alert(t('leads.detalhes.alerta'));
+                    navigate('/leads');
+                } catch (error) {
+                    alert("Erro ao inativar lead.");
+                }
+            } else {
+                // Utilizadores normais usam o método da store
+                const sucesso = await softDeleteLead(token, id);
+                if (sucesso) {
+                    alert(t('leads.detalhes.alerta'));
+                    navigate('/leads');
+                }
+            }
+        }
+    };
+
+    // --- HOOK DO MODAL (Inteligente) ---
+    // Se for Admin, chama a API de Admin (que aceita editar leads dos outros)
+    // Se for User Normal, usa a função normal da Store
+    const modalProps = useFormModal(
+        async () => {},
+        async (t, id, data) => {
+            if (isAdmin) {
+                try {
+                    await AdminService.editLead(id, data);
+                    // Atualiza a lead no ecrã após o admin a editar
+                    fetchLeadById(token, id);
+                    return true;
+                } catch (e) {
+                    console.error(e);
+                    return false;
+                }
+            } else {
+                return await updateLead(t, id, data);
+            }
+        },
+        token
+    );
+
+    // --- FUNÇÃO PARA APAGAR PERMANENTEMENTE (SÓ ADMIN) ---
+    const handleDeletePermanent = async () => {
+        if (window.confirm("Tem a certeza absoluta que deseja apagar esta Lead PERMANENTEMENTE?")) {
+            try {
+                await AdminService.deleteItemPermanent('lead', id);
+                alert("Lead apagada permanentemente!");
+                navigate(-1); // Volta para trás
+            } catch (e) {
+                alert("Erro ao apagar lead.");
+            }
+        }
+    };
+
+    const handleReativar = async () => {
+        if (window.confirm("Deseja reativar esta Lead?")) {
+            try {
+                await AdminService.toggleItemStatus('lead', id, false);
+                alert("Lead reativada com sucesso!");
+                fetchLeadById(token, id);
+            } catch (error) {
+                alert("Erro ao reativar lead.");
             }
         }
     };
@@ -81,11 +145,12 @@ export default function LeadDetails() {
             <div className="form-container">
                 <h3 className="form-title">{t('leads.detalhes.titulo_pag')}</h3>
                 <div className="custom-form">
-                    {/* Exibição estática dos dados da Lead */}
-                    <div className="form-group">
-                        <label>{t('leads.detalhes.label_titulo')}</label>
-                        <p className="static-data">{currentLead.titulo}</p>
-                    </div>
+                    {isAdmin && (
+                        <div className="form-group" style={{ borderBottom: '2px dashed #e2e8f0', paddingBottom: '15px', marginBottom: '15px' }}>
+                            <label style={{ color: '#3498db' }}><i className="fa-solid fa-crown"></i> Dono do Registo (Utilizador)</label>
+                            <p className="static-data" style={{ fontWeight: 'bold' }}>@{currentLead.user?.username || '---'}</p>
+                        </div>
+                    )}
 
                     <div className="form-group">
                         <label>{t('leads.detalhes.label_descricao')}</label>
@@ -116,9 +181,28 @@ export default function LeadDetails() {
                         <button onClick={(e) => modalProps.abrirParaEditar(e, currentLead)} className="btn-save">
                             <i className="fa-solid fa-pen"></i> {t('leads.detalhes.btn_editar')}
                         </button>
-                        <button onClick={handleRemover} className="btn-save-red">
-                            <i className="fa-solid fa-trash-can"></i> {t('leads.detalhes.btn_remover')}
-                        </button>
+
+                        {isAdmin ? (
+                            <>
+                                {currentLead.ativo ? (
+                                    <button onClick={handleRemover} className="btn-save-red" style={{ backgroundColor: '#f39c12' }}>
+                                        <i className="fa-solid fa-ban"></i> Inativar Lead
+                                    </button>
+                                ) : (
+                                    <button onClick={handleReativar} className="btn-save" style={{ backgroundColor: '#27ae60' }}>
+                                        <i className="fa-solid fa-folder-open"></i> Reativar Lead
+                                    </button>
+                                )}
+                                <button onClick={handleDeletePermanent} className="btn-save-red">
+                                    <i className="fa-solid fa-fire"></i> Apagar Permanente
+                                </button>
+                            </>
+                        ) : (
+                            /* Se for User Normal, mostra só o botão normal de remover (soft delete) */
+                            <button onClick={handleRemover} className="btn-save-red">
+                                <i className="fa-solid fa-trash-can"></i> {t('leads.detalhes.btn_remover')}
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

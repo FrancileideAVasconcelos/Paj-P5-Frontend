@@ -25,18 +25,54 @@
     --sidebar-width: 220px;
 }
 
-
-/* index.css */
+html, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
 
 /* Estilo para Desktop (o que já tens) */
 .layout-grid {
     display: grid;
     grid-template-columns: var(--sidebar-width) 1fr;
+    grid-template-rows: var(--header-height) 1fr auto;
     grid-template-areas:
     "header header"
     "aside  main"
     "footer footer";
-    height: 100vh;
+    min-height: 100vh;
+}
+
+.content {
+    grid-area: main;
+    padding: 20px;
+    background-color: var(--bg-main);
+    width: 100%;
+
+    height: auto !important;
+    min-height: 100%;
+    /* A MAGIA É AQUI: Corta a faixa branca apenas dentro da zona principal, sem estragar o sticky! */
+    overflow-x: hidden;
+    overflow-y: visible !important;
+}
+
+.main-header {
+    grid-area: header; /* Obriga o header a ocupar a área 'header' da grelha */
+}
+
+.main-aside {
+    grid-area: aside; /* Obriga a lateral a ocupar a área 'aside' da grelha */
+    background-color: var(--primary-color); /* Garante que o fundo azul não corta */
+}
+
+/* --- FIXAR A BARRA LATERAL NO DESKTOP --- */
+@media (min-width: 769px) {
+    .main-aside {
+        position: sticky;
+        top: var(--header-height);
+        height: calc(100vh - var(--header-height));
+        z-index: 1000;
+    }
 }
 
 /* --- RESPONSIVIDADE (Mobile) --- */
@@ -63,13 +99,4 @@
     .main-aside.open {
         left: 0;
     }
-}
-
-.content {
-    grid-area: main;
-    padding: 20px;
-    overflow-y: auto; /* Permite scroll se os cards forem muitos */
-    background-color: var(--bg-main);
-    width: 100%;
-    height: 100vh;
 }

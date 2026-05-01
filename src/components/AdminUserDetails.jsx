@@ -42,10 +42,9 @@ export default function AdminUserDetails() {
     /** @type {boolean} Verifica se o perfil em visualização pertence ao próprio administrador logado. */
     const isMe = currentUser?.username === username;
 
-    // --- ESTADOS E ACÇÕES DA STORE ADMINISTRATIVA ---
     const {
         users, userClients, userLeads, loadingDetails, fetchUserDetails, clearUserDetails, error,
-        editClientAdmin, editLeadAdmin, deleteUser, reactivateUser, fetchUsers,
+        editClientAdmin, editLeadAdmin, editUserAdmin, deleteUser, reactivateUser, fetchUsers, // <--- ADICIONA O editUserAdmin AQUI
         toggleItemStatus, deleteItemPermanent, toggleAllItemsStatus, deleteAllItemsPermanent
     } = useAdminStore();
 
@@ -69,6 +68,28 @@ export default function AdminUserDetails() {
         (t, id, data) => editLeadAdmin(t, username, id, data),
         token
     );
+
+    // --- NOVO: Modal para editar o Utilizador ---
+    const [editUserData, setEditUserData] = useState({});
+    const userModal = useFormModal(
+        async () => {}, // Admin não cria utilizadores por aqui
+        (t, _, data) => editUserAdmin(token, username, data), // Usa a store!
+        token
+    );
+
+    const handleEditUser = () => {
+        setEditUserData({
+            id: selectedUser.id,
+            primeiroNome: selectedUser.primeiroNome || '',
+            ultimoNome: selectedUser.ultimoNome || '',
+            email: selectedUser.email || '',
+            telefone: selectedUser.telefone || '',
+            fotoUrl: selectedUser.fotoUrl || '',
+            username: selectedUser.username || '',
+            password: 'admin-bypass' // <--- A MAGIA: Engana a validação do Java, mas o Bean ignora-a!
+        });
+        userModal.abrirParaEditar(null, selectedUser);
+    };
 
     /**
      * Efeito de Ciclo de Vida: Carrega os dados detalhados (Leads e Clientes) do utilizador.
@@ -217,6 +238,12 @@ export default function AdminUserDetails() {
                             <span><strong>@</strong> {username}</span>
                             <span><strong>✉️</strong> {selectedUser.email || t('admin.detalhes.sem_email')}</span>
                             <span><strong>📞</strong> {selectedUser.telefone || t('admin.detalhes.sem_telefone')}</span>
+                            {/* Botão de Edição */}
+                            <div style={{ marginTop: '15px' }}>
+                                <button className="btn-edit-small" onClick={handleEditUser}>
+                                    Editar Dados Pessoais
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -288,6 +315,44 @@ export default function AdminUserDetails() {
             {/* MODAIS DE EDIÇÃO */}
             <FormModal isOpen={clientModal.modalAberto} type="client" initialData={clientModal.itemEmEdicao} onClose={clientModal.fecharModal} onSave={clientModal.handleSalvar} />
             <FormModal isOpen={leadModal.modalAberto} type="lead" initialData={leadModal.itemEmEdicao} onClose={leadModal.fecharModal} onSave={leadModal.handleSalvar} />
+            {/* Modal de Edição de Utilizador */}
+            {userModal.modalAberto && (
+                <div className="modal-overlay" onClick={userModal.fecharModal}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h3>Editar: @{username}</h3>
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            await userModal.handleSalvar(editUserData);
+                            fetchUsers(token); // Recarrega a lista para mostrar a alteração
+                        }} className="custom-form">
+                            <div className="form-group">
+                                <label>Primeiro Nome</label>
+                                <input type="text" value={editUserData.primeiroNome} onChange={(e) => setEditUserData({...editUserData, primeiroNome: e.target.value})} required />
+                            </div>
+                            <div className="form-group">
+                                <label>Último Nome</label>
+                                <input type="text" value={editUserData.ultimoNome} onChange={(e) => setEditUserData({...editUserData, ultimoNome: e.target.value})} required />
+                            </div>
+                            <div className="form-group">
+                                <label>Email</label>
+                                <input type="email" value={editUserData.email} onChange={(e) => setEditUserData({...editUserData, email: e.target.value})} required />
+                            </div>
+                            <div className="form-group">
+                                <label>Telefone</label>
+                                <input type="text" value={editUserData.telefone} onChange={(e) => setEditUserData({...editUserData, telefone: e.target.value})} />
+                            </div>
+                            <div className="form-group">
+                                <label>URL da Foto</label>
+                                <input type="text" value={editUserData.fotoUrl} onChange={(e) => setEditUserData({...editUserData, fotoUrl: e.target.value})} />
+                            </div>
+                            <div className="modal-actions">
+                                <button type="button" className="btn-cancel" onClick={userModal.fecharModal}>Cancelar</button>
+                                <button type="submit" className="btn-save">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

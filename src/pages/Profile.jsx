@@ -4,11 +4,16 @@
  * Implementa uma lógica de segurança rigorosa que exige a password atual para qualquer alteração de dados.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useUserStore from '../store/useUserStore.js';
 import tokenStore from '../store/tokenStore.js';
 import {useTranslation} from "react-i18next";
+import { api } from '../services/api.js';
+import { STATUS_OPTIONS } from '../utils/constants.js';
+import '../styles/Profile.css';
+
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 
 /**
  * Componente funcional que gere o formulário de perfil.
@@ -62,6 +67,11 @@ export default function Profile() {
         atual: '', nova: '', confirmar: ''
     });
 
+    const [stats, setStats] = useState(null);
+
+    const [chartHeight, setChartHeight] = useState(320);
+
+
     /**
      * Efeito inicial: Verifica autenticação e carrega dados do utilizador se necessário.
      */
@@ -69,6 +79,12 @@ export default function Profile() {
         if (!token) navigate('/login');
         if (!currentUser && token) fetchCurrentUser(token);
     }, [token, currentUser, fetchCurrentUser, navigate]);
+
+    useEffect(() => {
+        if (token) {
+            api.get('/dashboard/stats').then(res => setStats(res)).catch(console.error);
+        }
+    }, [token]);
 
     /**
      * Efeito de Sincronização: Preenche o formulário local sempre que os dados do utilizador global mudarem.
@@ -161,6 +177,31 @@ export default function Profile() {
         }
     };
 
+    const CORES_TARTE = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
+
+    // A REGRA DE NEGÓCIO: Agrupar leads por estado para o Gráfico!
+    // A REGRA DE NEGÓCIO: Agrupar leads por estado para o Gráfico!
+    const dadosLeadsPorEstado = useMemo(() => {
+        // CORREÇÃO: Verifica primeiro se o stats existe (!stats) antes de ir procurar o leads!
+        if (!stats || !stats.leads || stats.leads.length === 0) return [];
+
+        const contagem = {};
+
+        // CORREÇÃO: usar stats em vez de estatisticas
+        stats.leads.forEach(lead => {
+            const estadoId = Number(lead.estado);
+            if (!contagem[estadoId]) {
+                const nomeEstado = STATUS_OPTIONS[estadoId]
+                    ? t(STATUS_OPTIONS[estadoId].key)
+                    : `Estado ${estadoId}`;
+
+                contagem[estadoId] = { name: nomeEstado, value: 0 };
+            }
+            contagem[estadoId].value += 1;
+        });
+        return Object.values(contagem);
+    }, [stats, t]);
+
     if (!currentUser) return <p className="loading-text">A carregar perfil...</p>;
 
     /** @type {string} Imagem padrão caso o utilizador não tenha foto definida. */
@@ -168,39 +209,88 @@ export default function Profile() {
 
     return (
         <div className="main-content">
-            <div className="form-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <div className="form-container profile-wrapper">
 
                 <h2 className="form-title">{t('profile.title')}</h2>
 
-                {/* Bloco de alertas para feedback visual */}
                 {mensagem.texto && (
-                    <div className={`alert-message ${mensagem.tipo === 'erro' ? 'alert-error' : 'alert-success'}`}
-                         style={{ padding: '10px', marginBottom: '15px', borderRadius: '5px',
-                             backgroundColor: mensagem.tipo === 'erro' ? '#ffebee' : '#e8f5e9',
-                             color: mensagem.tipo === 'erro' ? '#c62828' : '#2e7d32' }}>
+                    <div className={`alert-message ${mensagem.tipo === 'erro' ? 'alert-error' : 'alert-success'}`}>
                         {mensagem.texto}
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="custom-form">
 
-                    {/* Secção de Foto com pré-visualização instantânea */}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '30px' }}>
-                        <img
-                            src={formData.fotoUrl || defaultAvatar}
-                            alt="Foto de Perfil"
-                            style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #2c3e50', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}
-                            onError={(e) => { e.target.src = defaultAvatar; }}
-                        />
-                        <div className="form-group" style={{ width: '100%', marginTop: '15px' }}>
-                            <label>{t('geral.url')}</label>
-                            <input type="text" name="fotoUrl" value={formData.fotoUrl} onChange={handleFormChange} placeholder={t('profile.placeholder_url')} />
+                    {/* --- LINHA SUPERIOR: Gráfico (Esquerda) e Avatar (Direita) --- */}
+                    <div className="profile-top-row">
+
+                        {/* COLUNA ESQUERDA: Avatar e Input do URL */}
+                        <div className="profile-right-col">
+                            <div className="profile-avatar-container">
+                                <img
+                                    src={formData.fotoUrl || defaultAvatar}
+                                    alt="Foto de Perfil"
+                                    className="profile-avatar"
+                                    onError={(e) => { e.target.src = defaultAvatar; }}
+                                />
+                                <div className="form-group" style={{ width: '100%', marginTop: '15px' }}>
+                                    <label>{t('geral.url')}</label>
+                                    <input
+                                        type="text"
+                                        name="fotoUrl"
+                                        value={formData.fotoUrl}
+                                        onChange={handleFormChange}
+                                        placeholder={t('profile.placeholder_url')}
+                                    />
+                                </div>
+                            </div>
                         </div>
+
+                        {/* COLUNA DIREITA: Gráfico de Leads */}
+                        <div className="profile-left-col">
+                            {stats && dadosLeadsPorEstado.length > 0 ? (
+                                <div className="profile-chart-card">
+                                    <h3 className="profile-chart-title">
+                                        <i className="fa-solid fa-chart-pie" style={{marginRight: '8px'}}></i> {t('dashboard.distribuicao_leads')}
+                                    </h3>
+                                    <div className="profile-chart-container">
+                                        {dadosLeadsPorEstado.length > 0 ? (
+                                            /* A MAGIA AQUI: width e height fixos diretamente no PieChart */
+                                            <PieChart width={200} height={160}>
+                                                <Pie
+                                                    data={dadosLeadsPorEstado}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={40}
+                                                    outerRadius={60}
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                    stroke="none"
+                                                >
+                                                    {dadosLeadsPorEstado.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={CORES_TARTE[index % CORES_TARTE.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <RechartsTooltip borderRadius={8} />
+                                                <Legend verticalAlign="bottom" height={20} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                                            </PieChart>
+                                        ) : (<p style={{color: '#94a3b8', textAlign: 'center', marginTop: '100px'}}>{t('dashboard.sem_dados')}</p>)}
+                                    </div>
+                                </div>
+                            ) : (
+                                /* Placeholder caso não haja leads, para manter a estrutura simétrica */
+                                <div className="profile-chart-card">
+                                    <i className="fa-solid fa-chart-pie" style={{ fontSize: '30px', color: '#cbd5e1', marginBottom: '10px' }}></i>
+                                    <p style={{ color: '#94a3b8', fontSize: '13px' }}>Sem dados de leads</p>
+                                </div>
+                            )}
+                        </div>
+
                     </div>
 
-                    <hr style={{ border: '1px solid #eee', marginBottom: '20px' }}/>
+                    <hr className="profile-divider"/>
 
-                    <h3 style={{ marginBottom: '15px', color: '#333' }}>{t('profile.dados_pessoais')}</h3>
+                    <h3 className="profile-section-title">{t('profile.dados_pessoais')}</h3>
 
                     <div className="form-group">
                         <label>{t('geral.username')}</label>
@@ -229,10 +319,10 @@ export default function Profile() {
                         </div>
                     </div>
 
-                    <hr style={{ border: '1px solid #eee', margin: '20px 0' }}/>
+                    <hr className="profile-divider"/>
 
-                    <h3 style={{ marginBottom: '15px', color: '#333' }}>{t('profile.seguranca')}</h3>
-                    <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>{t('profile.confirmacao')}</p>
+                    <h3 className="profile-section-title">{t('profile.seguranca')}</h3>
+                    <p className="profile-security-hint">{t('profile.confirmacao')}</p>
 
                     <div className="form-group">
                         <label>{t('profile.pass_atual')}</label>

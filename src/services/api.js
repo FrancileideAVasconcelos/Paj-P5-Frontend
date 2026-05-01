@@ -75,6 +75,7 @@ export const AdminService = {
 
     inviteUser: (email) => api.post('/admin/users/invite', { email }),
     getAllUsers: (search = "") => api.get(`/admin/users${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+    editUser: (username, data) => api.patch(`/admin/users/${username}`, data),
     getUserClients: (username) => api.get(`/admin/users/${username}/clients`),
     getUserLeads: (username) => api.get(`/admin/users/${username}/leads`),
     deleteUser: (username, permanente) => api.delete(`/admin/users/${username}?permanente=${permanente}`),

@@ -167,38 +167,95 @@
 .btn-profile-danger:hover { background-color: #fef2f2; color: #b91c1c; border-color: #fca5a5; }
 
 /* --- RESPONSIVIDADE PARA O PAINEL DE ADMINISTRAÇÃO --- */
+/* --- RESPONSIVIDADE PARA O PAINEL DE ADMINISTRAÇÃO --- */
 @media (max-width: 768px) {
+    /* Cabeçalho da página (Título e Voltar) */
     .details-header {
         flex-direction: column;
+        align-items: stretch;
         gap: 15px;
         text-align: center;
     }
 
-    /* Empilha a foto de perfil em cima e os botões de ação em baixo */
+    /* Botão voltar fica maior e mais fácil de clicar em mobile */
+    .details-header .btn-back {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Cartão Principal do Perfil */
     .profile-detail-card {
         flex-direction: column;
         text-align: center;
-        gap: 20px;
+        gap: 25px;
+        padding: 20px 15px;
+        border-left: none;
+        border-top: 6px solid var(--primary-color); /* Em mobile a borda fica em cima */
     }
 
+    /* Zona da Foto e Contactos */
     .profile-detail-left {
         flex-direction: column;
-        gap: 10px;
+        width: 100%;
+        gap: 15px;
     }
 
+    /* Ícones de Contacto em formato lista centrada */
     .profile-detail-contacts {
         flex-direction: column;
-        gap: 5px;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
     }
 
-    /* Cartões da lista de utilizadores */
+    /* O botão azul de "Editar Dados Pessoais" (que deve ter a classe btn-edit-small) */
+    .profile-detail-contacts > div {
+        width: 100%;
+        margin-top: 20px !important;
+    }
+
+    .btn-edit-small {
+        width: 100%;
+        padding: 12px;
+        font-size: 15px;
+    }
+
+    /* Os botões de Inativar e Apagar a conta (Laranjas/Vermelhos) */
+    .profile-detail-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 12px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+    }
+
+    .profile-detail-actions button {
+        width: 100%;
+        padding: 12px;
+        font-size: 15px;
+    }
+
+    /* Cartões da lista de utilizadores (na página principal do Admin) */
     .user-card {
         flex-direction: column;
         text-align: center;
         gap: 15px;
+        padding: 20px 15px;
     }
 
     .user-info {
         flex-direction: column;
+    }
+
+    /* Os botões de ação em lote dentro dos cartões (Clientes e Leads) */
+    .data-card-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .data-card-actions {
+        width: 100%;
+        justify-content: center;
     }
 }

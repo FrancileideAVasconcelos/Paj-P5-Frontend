@@ -5,7 +5,7 @@
  * e fornecer atalhos para o perfil e logout.
  */
 
-import {useEffect, useRef} from "react";
+import {useEffect, useRef, useState} from "react";
 import '../styles/AsideFooterHeader.css'
 import tokenStore from "../store/tokenStore.js";
 import useUserStore from '../store/useUserStore.js';
@@ -26,10 +26,31 @@ export default function Header({ toggleMenu }) {
     // --- NOVO: Puxar traduções ---
     const { t, i18n } = useTranslation();
 
-    // Função para trocar o idioma
-    const toggleLanguage = () => {
-        const nextLang = i18n.language === 'pt' ? 'en' : 'pt';
-        i18n.changeLanguage(nextLang);
+    // --- NOVO: Gestão do Dropdown de Idiomas ---
+    const [isLangOpen, setIsLangOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    // Fecha o menu se clicar em qualquer lugar fora dele
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsLangOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    // Muda o idioma e fecha o dropdown
+    const changeLanguage = (langCode) => {
+        i18n.changeLanguage(langCode);
+        setIsLangOpen(false);
+    };
+
+    // Dicionário visual para apresentar bonitinho
+    const languageNames = {
+        'pt': 'Português',
+        'en': 'English'
     };
 
     // --- ZUSTAND E TOKENS ---
@@ -96,52 +117,63 @@ export default function Header({ toggleMenu }) {
             {/* Secção de ações do utilizador, visível apenas se autenticado */}
             <div className="header-actions">
 
-                {/* Usa a tradução para o Bem-Vindo */}
-                {token && <p style={{ color: 'white', marginRight: '15px' }}>{t('header.welcome')}, {currentUser ? currentUser.primeiroNome : '...'}</p>}
+                {/* --- GRUPO 1: INFORMAÇÕES (Fica à esquerda no PC, e em baixo no Mobile) --- */}
+                <div className="header-info">
+                    {/* ÍCONE DO SINO COM NOTIFICAÇÕES */}
+                    {token && (
+                        <div
+                            onClick={() => navigate('/chat')}
+                            style={{ position: 'relative', cursor: 'pointer', color: 'white' }}
+                            title="Ir para o Chat"
+                        >
+                            <i className="fa-solid fa-bell" style={{ fontSize: '20px' }}></i>
 
-                {/* --- ÍCONE DO SINO COM NOTIFICAÇÕES --- */}
-                {token && <div
-                    onClick={() => navigate('/chat')}
-                    style={{ position: 'relative', cursor: 'pointer', color: 'white', marginRight: '10px' }}
-                    title="Ir para o Chat"
-                >
-                    <i className="fa-solid fa-bell" style={{ fontSize: '22px' }}></i>
-
-                    {unreadCount > 0 && (
-                        <span style={{
-                            position: 'absolute',
-                            top: '-8px',
-                            right: '-12px',
-                            background: '#e74c3c',
-                            color: 'white',
-                            borderRadius: '50%',
-                            minWidth: '18px',
-                            height: '18px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '11px',
-                            fontWeight: 'bold',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                        }}>
-                            {unreadCount > 99 ? '99+' : unreadCount}
-                        </span>
+                            {unreadCount > 0 && (
+                                <span style={{
+                                    position: 'absolute', top: '-8px', right: '-12px', background: '#e74c3c',
+                                    color: 'white', borderRadius: '50%', minWidth: '18px', height: '18px',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: '11px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                }}>
+                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                </span>
+                            )}
+                        </div>
                     )}
-                </div>}
-                {/* -------------------------------------- */}
 
+                    {/* TEXTO DE BEM-VINDO */}
+                    {token && <p className="header-welcome-text">{t('header.welcome')}, {currentUser ? currentUser.primeiroNome : '...'}</p>}
+                </div>
 
-                {token && <div className="logout-btn" onClick={() => navigate('/profile')}>{t('header.profile')}</div>}
-                {token && <div className="logout-btn" onClick={() => tokenStore.getState().logout()}>{t('header.logout')}</div>}
+                {/* --- GRUPO 2: BOTÕES (Fica à direita no PC, e em cima no Mobile) --- */}
+                <div className="header-buttons">
+                    {token && <div className="logout-btn" onClick={() => navigate('/profile')}>{t('header.profile')}</div>}
+                    {token && <div className="logout-btn" onClick={() => tokenStore.getState().logout()}>{t('header.logout')}</div>}
 
-                {/* --- BOTÃO DE MUDAR IDIOMA --- */}
-                {token && <button
-                    onClick={toggleLanguage}
-                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '15px', marginRight: '15px', color: 'white' }}
-                    title="Mudar Idioma"
-                >
-                    {i18n.language === 'pt' ? 'EN' : 'PT'}
-                </button>}
+                    {/* SELETOR DE IDIOMA (DROPDOWN) */}
+                    {token && (
+                        <div className="language-selector" ref={dropdownRef}>
+                            <button
+                                className="lang-btn-current"
+                                onClick={() => setIsLangOpen(!isLangOpen)}
+                                title={t('header.change_language')}
+                            >
+                                <i className="fa-solid fa-globe"></i>
+                                {i18n.language.toUpperCase()}
+                                <i className={`fa-solid fa-chevron-${isLangOpen ? 'up' : 'down'}`} style={{ fontSize: '10px', marginLeft: '5px' }}></i>
+                            </button>
+
+                            <div className={`lang-dropdown-menu ${isLangOpen ? 'open' : ''}`}>
+                                <button className={`lang-option ${i18n.language === 'pt' ? 'active' : ''}`} onClick={() => changeLanguage('pt')}>
+                                    🇵🇹 Português
+                                </button>
+                                <button className={`lang-option ${i18n.language === 'en' ? 'active' : ''}`} onClick={() => changeLanguage('en')}>
+                                    🇬🇧 English
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
             </div>
         </header>

@@ -6,6 +6,7 @@
  */
 
 import { useEffect } from 'react';
+import useUserStore from '../store/useUserStore.js'; // Adiciona isto
 import { useNavigate } from "react-router-dom";
 import tokenStore from "../store/tokenStore.js";
 import useClientStore from "../store/useClientStore.js";
@@ -38,6 +39,9 @@ export default function Client(){
 
     const { t, i18n } = useTranslation();
 
+    const currentUser = useUserStore((state) => state.currentUser);
+    const isAdmin = currentUser?.admin;
+
     /**
      * Efeito de carregamento inicial: Procura a lista de clientes no servidor
      * sempre que o componente é montado ou o token/função de fetch mudam.
@@ -67,13 +71,20 @@ export default function Client(){
                 <div className="data-list">
                     {/* Mapeia o array de clientes para gerar os itens clicáveis da lista */}
                     {clients.map((client) => (
-                        <div
-                            key={client.id}
-                            className="data-item"
-                            onClick={() => navigate(`/clients/${client.id}`)}
-                        >
+                        <div key={client.id} className="data-item" onClick={() => navigate(`/clients/${client.id}`)}>
                             <div className="data-info">
-                                <h4 className="data-title">{client.nome}</h4>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                    <h4 className="data-title">
+                                        {client.nome}
+                                        {!client.ativo && <span style={{ backgroundColor: '#e74c3c', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', marginLeft: '10px', verticalAlign: 'middle' }}>INATIVO</span>}
+                                    </h4>
+                                    {/* SE FOR ADMIN, MOSTRA O DONO */}
+                                    {isAdmin && (
+                                        <span style={{ fontSize: '12px', color: '#3498db', fontWeight: 'bold' }}>
+                                            Dono: @{client.dono}
+                                        </span>
+                                    )}
+                                </div>
                                 <p>{client.empresa}</p>
                             </div>
                         </div>

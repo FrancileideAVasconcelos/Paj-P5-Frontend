@@ -137,7 +137,7 @@ const resources = {
                     "label_data": "Data de Registo",
                     "btn_editar": "Editar Detalhes",
                     "btn_remover": "Remover Lead",
-                    "alerta": "Lead removida",
+                    "alerta": "Lead inativada",
                     "confirm_remover": "Tem a certeza que deseja inativar este registo?"
                 }
             },

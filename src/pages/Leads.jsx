@@ -13,6 +13,7 @@ import FormModal from "../components/formModal.jsx";
 import useFormModal from "../hooks/useFormModal.js";
 import '../styles/ClientLead.css';
 import {useTranslation} from "react-i18next";
+import useUserStore from "../store/useUserStore.js";
 
 /**
  * Componente funcional para visualização e filtragem da lista de leads.
@@ -37,6 +38,9 @@ export default function Leads() {
     const modalProps = useFormModal(addLead, updateLead, token);
 
     const { t, i18n } = useTranslation();
+
+    const currentUser = useUserStore((state) => state.currentUser);
+    const isAdmin = currentUser?.admin;
 
     /**
      * Efeito de carregamento: Procura as leads sempre que o token ou o filtro mudarem.
@@ -95,11 +99,22 @@ export default function Leads() {
                         return (
                             <div key={lead.id} className="data-item" onClick={() => navigate(`/leads/${lead.id}`)}>
                                 <div className="data-info">
-                                    <div className="data-header-row">
+                                    <div className="data-header-row" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'flex-start' }}>
                                         <div>
-                                            <h4 className="data-title">{lead.titulo}</h4>
+                                            <h4 className="data-title">
+                                                {lead.titulo}
+                                                {!lead.ativo && <span style={{ backgroundColor: '#e74c3c', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', marginLeft: '10px', verticalAlign: 'middle' }}>INATIVA</span>}
+                                            </h4>
                                             <span className="data-date">{formatarData(lead.dataCriacao)}</span>
                                         </div>
+                                        {/* SE FOR ADMIN, MOSTRA O DONO DA LEAD */}
+                                        {isAdmin && (
+                                            <div style={{ textAlign: 'right' }}>
+                                                <span style={{ fontSize: '12px', color: '#3498db', fontWeight: 'bold' }}>
+                                                    Dono: @{lead.user?.username || '---'}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                     {/* Badge dinâmica baseada no estado da lead */}
                                     <span className={`badge status-${lead.estado}`}>

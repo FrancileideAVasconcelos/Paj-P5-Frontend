@@ -1,51 +1,40 @@
-/**
- * @file ListClientLeadAdmin.jsx
- * @description Componente reutilizável para a interface de administração que lista e gere registos de Clientes ou Leads.
- * Oferece suporte para ações individuais (edição, inativação, exclusão) e ações em lote (reativar, inativar ou excluir todos).
- */
-
 import '../styles/Admin.css'
-import React from 'react';
-import {useTranslation} from "react-i18next";
+import React, { useMemo } from 'react';
+import { useTranslation } from "react-i18next";
 import { STATUS_OPTIONS } from "../utils/constants.js";
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 
-/**
- * Componente de lista administrativa para Clientes e Leads.
- * * @component
- * @param {Object} props - Propriedades do componente.
- * @param {string} props.title - O título visível do cartão (ex: "Clientes" ou "Leads").
- * @param {string} props.type - Define o tipo de dados a renderizar: 'client' ou 'lead'.
- * @param {Array} props.data - Array de objetos contendo os dados a serem listados.
- * @param {string} [props.cardClass] - Classe CSS opcional para estilização personalizada do contentor.
- * @param {React.ReactElement} [props.filterElement] - Elemento de interface (ex: select) para filtragem, injetado no cabeçalho.
- * @param {Function} props.onEdit - Função chamada ao clicar no botão de editar um item individual.
- * @param {Function} props.onToggleActive - Função para alternar o estado ativo/inativo de um item individual.
- * @param {Function} props.onDelete - Função para a exclusão (normalmente lógica) de um item individual.
- * @param {Function} props.onReactivateAll - Ação em lote para reativar todos os itens da lista.
- * @param {Function} props.onInactivateAll - Ação em lote para inativar todos os itens da lista.
- * @param {Function} props.onDeleteAll - Ação em lote para a exclusão definitiva de todos os itens exibidos.
- * * @returns {JSX.Element} Um cartão estruturado com cabeçalho de ações globais e lista de itens detalhados.
- */
 export default function ListClientLeadAdmin({
                                                 title, type, data, cardClass, filterElement,
-                                                onEdit, onToggleActive, onDelete,
-                                                onReactivateAll, onInactivateAll, onDeleteAll}) {
-
-    /** * Dicionário local para tradução dos códigos de estado das Leads.
-     * Mapeia o valor numérico do backend para uma string legível.
-     * @type {Object.<number, string>}
-     */
+                                                onReactivateAll, onInactivateAll, onDeleteAll
+                                            }) {
 
     const { t } = useTranslation();
+
+    // Lógica para agrupar as Leads por estado (Só corre se o type for 'lead')
+    const leadsAgrupadas = useMemo(() => {
+        if (type !== 'lead' || !data || data.length === 0) return [];
+
+        const contagem = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 };
+
+        data.forEach(l => {
+            contagem[l.estado] = (contagem[l.estado] || 0) + 1;
+        });
+
+        return STATUS_OPTIONS.map(opt => ({
+            name: t(opt.key),
+            value: contagem[opt.id] || 0,
+            color: opt.id === 0 ? '#3b82f6' : opt.id === 1 ? '#f59e0b' : opt.id === 2 ? '#8b5cf6' : opt.id === 3 ? '#10b981' : '#ef4444'
+        })).filter(item => item.value > 0);
+    }, [data, type, t]);
 
 
     return (
         <div className={`data-card ${cardClass || ''}`}>
-            {/* CABEÇALHO DO CARTÃO: Título, contador e ações em lote */}
+            {/* CABEÇALHO DO CARTÃO: Título, filtro e ações em lote (MANTIDO!) */}
             <div className="data-card-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <h3>{title} ({data?.length || 0})</h3>
-                    {/* Renderização condicional do elemento de filtro passado pelo pai */}
                     {filterElement}
                 </div>
 
@@ -56,56 +45,54 @@ export default function ListClientLeadAdmin({
                 </div>
             </div>
 
-            {/* CONTEÚDO DO CARTÃO: Lista de itens ou mensagem de lista vazia */}
+            {/* CONTEÚDO DO CARTÃO: Gráficos e Resumos */}
             <div className="data-card-content">
                 {(!data || data.length === 0) ? (
                     <p className="empty-text">{t('admin_user_details.lista.vazia', { tipo: title.toLowerCase() })}</p>
                 ) : (
-                    <ul className="data-list">
-                        {data.map(item => (
-                            <li className="admin-list-item" key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #eee' }}>
-                                <div>
-                                    {/* NOME/TÍTULO: Lógica dinâmica baseada no tipo do item */}
-                                    <strong>{type === 'client' ? item.nome : (item.titulo || item.nome)}</strong><br/>
+                    <div style={{ padding: '20px 0', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '250px' }}>
 
-                                    {/* SUBTÍTULO: Exibe a Empresa para Clientes e o Estado para Leads */}
-                                    <span className="item-subtitle" style={{ fontSize: '13px', color: '#666' }}>
-                                        {type === 'client' ? (
-                                            <><i className="fa-regular fa-building"></i> <span style={{ fontWeight: 'bold', color: '#2980b9' }}>{item.empresa || item.email}</span></>
-                                        ) : (
-                                            <>
-                                                <i className="fa-solid fa-flag"></i> Estado:
-                                                <span style={{ fontWeight: 'bold', color: '#2980b9' }}>
-                                                    {/* STATUS_OPTIONS vem de ../utils/constants.js */}
-                                                    {t(STATUS_OPTIONS.find(opt => opt.id === item.estado)?.key)}
-                                                </span>
-                                            </>
-                                        )}
-                                    </span>
-
-                                    {/* INDICADOR DE INATIVIDADE: Badge visível apenas se o item não estiver ativo */}
-                                    {!item.ativo && (
-                                        <span style={{ backgroundColor: '#d9534f', color: 'white', padding: '3px 8px', borderRadius: '12px', fontSize: '11px', marginLeft: '10px', fontWeight: 'bold' }}>
-                                            <i className="fa-solid fa-ban"></i> {t('admin_user_details.lista.inativo')}
-                                        </span>
-                                    )}
+                        {/* SE FOR CLIENTE: Mostra um cartão resumo mais elegante e contido */}
+                        {type === 'client' ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '30px 20px', width: '100%', maxWidth: '220px', margin: '0 auto' }}>
+                                <div style={{ backgroundColor: '#e0f2fe', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                                    <i className="fa-solid fa-users" style={{ fontSize: '22px', color: '#0ea5e9' }}></i>
                                 </div>
+                                <span style={{ fontSize: '32px', fontWeight: 'bold', color: '#1e293b', lineHeight: '1', marginBottom: '5px' }}>
+                                    {data.length}
+                                </span>
+                                <span style={{ color: '#64748b', fontSize: '12px', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>
+                                    Total de Clientes
+                                </span>
+                            </div>
+                        ) : (
+                            /* SE FOR LEAD: Mostra o Gráfico Circular que criámos */
+                            <div style={{ width: '100%', minHeight: '250px', display: 'flex', justifyContent: 'center' }}>
+                                {/* Ao colocarmos 'height={250}' diretamente e um minHeight no pai, a biblioteca já não quebra! */}
+                                <ResponsiveContainer width="100%" height={250}>
+                                    <PieChart>
+                                        <Pie
+                                            data={leadsAgrupadas}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={80}
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                            stroke="none"
+                                        >
+                                            {leadsAgrupadas.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <RechartsTooltip borderRadius={8} />
+                                        <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
 
-                                {/* BOTÕES DE AÇÃO INDIVIDUAIS */}
-                                <div className="action-buttons">
-                                    <button className="icon-btn" title={t('admin_user_details.lista.editar')} onClick={() => onEdit && onEdit(item)}>
-                                        <i className="fa-solid fa-pen"></i>
-                                    </button>
-                                    <button className="icon-btn orange-btn" title={item.ativo ? t('admin_user_details.lista.inativar') : t('admin_user_details.lista.reativar')} onClick={() => onToggleActive && onToggleActive(item)}>
-                                        <i className={`fa-solid ${item.ativo ? 'fa-ban' : 'fa-folder-open'}`}></i>
-                                    </button>
-                                    <button className="icon-btn red-btn" title={t('admin_user_details.lista.excluir')} onClick={() => onDelete && onDelete(item)}>
-                                        <i className="fa-solid fa-trash"></i>
-                                    </button>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                    </div>
                 )}
             </div>
         </div>
