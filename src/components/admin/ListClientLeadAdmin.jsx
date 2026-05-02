@@ -1,7 +1,7 @@
-import '../styles/Admin.css'
+import '../../styles/Admin.css'
 import React, { useMemo } from 'react';
 import { useTranslation } from "react-i18next";
-import { STATUS_OPTIONS } from "../utils/constants.js";
+import { STATUS_OPTIONS } from "../../utils/constants.js";
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function ListClientLeadAdmin({

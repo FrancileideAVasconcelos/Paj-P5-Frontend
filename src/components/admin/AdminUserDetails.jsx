@@ -7,16 +7,16 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import useAdminStore from '../store/useAdminStore.js';
-import useUserStore from '../store/useUserStore.js';
-import tokenStore from '../store/tokenStore.js';
-import { STATUS_OPTIONS } from "../utils/constants.js";
-import ListClientLeadAdmin from '../components/ListClientLeadAdmin.jsx';
-import FormModal from "./formModal.jsx";
-import useFormModal from "../hooks/useFormModal.js";
+import useAdminStore from '../../store/useAdminStore.js';
+import useUserStore from '../../store/useUserStore.js';
+import tokenStore from '../../store/tokenStore.js';
+import { STATUS_OPTIONS } from "../../utils/constants.js";
+import ListClientLeadAdmin from './ListClientLeadAdmin.jsx';
+import FormModal from "../formModal.jsx";
+import useFormModal from "../../hooks/useFormModal.js";
 
-import '../styles/ClientLead.css';
-import '../styles/Admin.css';
+import '../../styles/ClientLead.css';
+import '../../styles/Admin.css';
 import {useTranslation} from "react-i18next";
 
 /**
@@ -180,9 +180,9 @@ export default function AdminUserDetails() {
      */
     const handleDeleteAll = async (type) => {
         const tipoTraduzido = type === 'client' ?
-            t('admin.detalhes.label_clientes') : t('admin.detalhes.label_leads');
+            t('admin_user_details.label_clientes') : t('admin_user_details.label_leads');
 
-        if (window.confirm(t('admin.detalhes.confirm_lote_excluir', { tipo: tipoTraduzido }))) {
+        if (window.confirm(t('admin_user_details.confirm_lote_excluir', { tipo: tipoTraduzido }))) {
             await deleteAllItemsPermanent(token, username, type);
         }
     };
@@ -192,8 +192,8 @@ export default function AdminUserDetails() {
      * @async
      */
     const handleToggleUserStatus = async () => {
-        const chave = selectedUser.ativo ? 'admin.detalhes.confirm_inativar_user' :
-            'admin.detalhes.confirm_reativar_user';
+        const chave = selectedUser.ativo ? 'admin_user_details.aviso_inativar' :
+            'admin_user_details.aviso_reativar';
 
         if (window.confirm(t(chave, { username }))){
             if (selectedUser.ativo) await deleteUser(token, username, false);
@@ -241,7 +241,7 @@ export default function AdminUserDetails() {
                             {/* Botão de Edição */}
                             <div style={{ marginTop: '15px' }}>
                                 <button className="btn-edit-small" onClick={handleEditUser}>
-                                    Editar Dados Pessoais
+                                    {t('admin_user_details.editar_dados')}
                                 </button>
                             </div>
                         </div>
@@ -258,7 +258,7 @@ export default function AdminUserDetails() {
                                 onClick={handleToggleUserStatus}
                             >
                                 <i className={`fa-solid ${selectedUser.ativo ? 'fa-user-slash' : 'fa-user-check'}`}></i>
-                                {selectedUser.ativo ? t('admin_user_details.desativar_conta') : t('admin_user_details.ativar_conta')}
+                                {selectedUser.ativo ? t('admin_user_details.inativar_conta') : t('admin_user_details.reativar_conta')}
                             </button>
                             <button
                                 className="btn-save-red"
@@ -319,35 +319,35 @@ export default function AdminUserDetails() {
             {userModal.modalAberto && (
                 <div className="modal-overlay" onClick={userModal.fecharModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h3>Editar: @{username}</h3>
+                        <h3>{t('geral.editar')}: @{username}</h3>
                         <form onSubmit={async (e) => {
                             e.preventDefault();
                             await userModal.handleSalvar(editUserData);
                             fetchUsers(token); // Recarrega a lista para mostrar a alteração
                         }} className="custom-form">
                             <div className="form-group">
-                                <label>Primeiro Nome</label>
+                                <label>{t('geral.primeiro')}</label>
                                 <input type="text" value={editUserData.primeiroNome} onChange={(e) => setEditUserData({...editUserData, primeiroNome: e.target.value})} required />
                             </div>
                             <div className="form-group">
-                                <label>Último Nome</label>
+                                <label>{t('geral.ultimo')}</label>
                                 <input type="text" value={editUserData.ultimoNome} onChange={(e) => setEditUserData({...editUserData, ultimoNome: e.target.value})} required />
                             </div>
                             <div className="form-group">
-                                <label>Email</label>
+                                <label>{t('geral.email')}</label>
                                 <input type="email" value={editUserData.email} onChange={(e) => setEditUserData({...editUserData, email: e.target.value})} required />
                             </div>
                             <div className="form-group">
-                                <label>Telefone</label>
+                                <label>{t('geral.telefone')}</label>
                                 <input type="text" value={editUserData.telefone} onChange={(e) => setEditUserData({...editUserData, telefone: e.target.value})} />
                             </div>
                             <div className="form-group">
-                                <label>URL da Foto</label>
+                                <label>{t('geral.url')}</label>
                                 <input type="text" value={editUserData.fotoUrl} onChange={(e) => setEditUserData({...editUserData, fotoUrl: e.target.value})} />
                             </div>
                             <div className="modal-actions">
-                                <button type="button" className="btn-cancel" onClick={userModal.fecharModal}>Cancelar</button>
-                                <button type="submit" className="btn-save">Guardar</button>
+                                <button type="button" className="btn-cancel" onClick={userModal.fecharModal}>{t('geral.cancelar')}</button>
+                                <button type="submit" className="btn-save">{t('geral.guardar')}</button>
                             </div>
                         </form>
                     </div>

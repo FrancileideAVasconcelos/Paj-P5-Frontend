@@ -6,7 +6,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import Client from './pages/Client.jsx';
 import Profile from "./pages/Profile.jsx";
 import Admin from "./pages/Admin.jsx";
-import AdminUserDetails from "./components/AdminUserDetails.jsx";
+import AdminUserDetails from "./components/admin/AdminUserDetails.jsx";
 import LeadDetails from "./components/LeadDetails.jsx";
 import ClientDetails from "./components/ClientDetails.jsx";
 import useUserStore from "./store/useUserStore.js";
