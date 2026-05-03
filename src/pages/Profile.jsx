@@ -180,26 +180,22 @@ export default function Profile() {
     const CORES_TARTE = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
 
     // A REGRA DE NEGÓCIO: Agrupar leads por estado para o Gráfico!
-    // A REGRA DE NEGÓCIO: Agrupar leads por estado para o Gráfico!
     const dadosLeadsPorEstado = useMemo(() => {
-        // CORREÇÃO: Verifica primeiro se o stats existe (!stats) antes de ir procurar o leads!
-        if (!stats || !stats.leads || stats.leads.length === 0) return [];
+        // Agora o Java envia "leadsPorEstado", se não existir, devolve vazio
+        if (!stats || !stats.leadsPorEstado) return [];
 
-        const contagem = {};
+        const resultado = [];
 
-        // CORREÇÃO: usar stats em vez de estatisticas
-        stats.leads.forEach(lead => {
-            const estadoId = Number(lead.estado);
-            if (!contagem[estadoId]) {
-                const nomeEstado = STATUS_OPTIONS[estadoId]
-                    ? t(STATUS_OPTIONS[estadoId].key)
-                    : `${t('lead.detalhe.estado')} ${estadoId}`;
+        Object.entries(stats.leadsPorEstado).forEach(([estadoIdStr, quantidade]) => {
+            const estadoId = Number(estadoIdStr);
+            const nomeEstado = STATUS_OPTIONS[estadoId]
+                ? t(STATUS_OPTIONS[estadoId].key)
+                : `${t('leads.detalhes.estado')} ${estadoId}`;
 
-                contagem[estadoId] = { name: nomeEstado, value: 0 };
-            }
-            contagem[estadoId].value += 1;
+            resultado.push({ name: nomeEstado, value: quantidade });
         });
-        return Object.values(contagem);
+
+        return resultado;
     }, [stats, t]);
 
     if (!currentUser) return <p className="loading-text">{t('profile.a_carregar')}</p>;

@@ -55,25 +55,22 @@ export default function Dashboard() {
     const CORES_TARTE = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
 
     // 1. Leads por Estado (Tarte)
+    // 1. Leads por Estado (Tarte)
     const dadosLeadsPorEstado = useMemo(() => {
-        if (!stats?.leads || stats.leads.length === 0) return [];
-        const contagem = {};
+        if (!stats || !stats.leadsPorEstado) return [];
 
-        stats.leads.forEach(lead => {
-            const estadoId = Number(lead.estado);
-            if (!contagem[estadoId]) {
-                // Vai buscar a chave ao constants.js e traduz!
-                const nomeEstado = STATUS_OPTIONS[estadoId]
-                    ? t(STATUS_OPTIONS[estadoId].key)
-                    : `${t('leads.detalhes.estado')} ${estadoId}`;
+        const resultado = [];
+        // O Java manda um mapa { "0": 10, "1": 5 }, vamos convertê-lo para o que o Recharts precisa
+        Object.entries(stats.leadsPorEstado).forEach(([estadoIdStr, quantidade]) => {
+            const estadoId = Number(estadoIdStr);
+            const nomeEstado = STATUS_OPTIONS[estadoId]
+                ? t(STATUS_OPTIONS[estadoId].key)
+                : `${t('leads.detalhes.estado')} ${estadoId}`;
 
-                contagem[estadoId] = { id: estadoId, name: nomeEstado, value: 0 };            }
-            contagem[estadoId].value += 1;
+            resultado.push({ id: estadoId, name: nomeEstado, value: quantidade });
         });
-        return Object.values(contagem);
 
-        // Atenção: Adicionei o 't' ao array de dependências para o gráfico atualizar
-        // se o utilizador mudar a língua da página no cabeçalho!
+        return resultado;
     }, [stats, t]);
 
     // 2. Evolução Combinada (Leads + Utilizadores no mesmo gráfico!)
@@ -99,10 +96,11 @@ export default function Dashboard() {
         return Object.values(mapaDatas).sort((a, b) => a.data.localeCompare(b.data));
     }, [stats]);
 
-    // 3. Leads por Utilizador
-    const leadsPorUserData = stats?.leadsPorUtilizador
-        ? Object.entries(stats.leadsPorUtilizador).map(([name, quantidade]) => ({ name, quantidade }))
-        : [];
+    // 3. Leads por Utilizador (Top 5 gerado no Backend)
+    const leadsPorUserData = useMemo(() => {
+        if (!stats?.leadsPorUtilizador) return [];
+        return Object.entries(stats.leadsPorUtilizador).map(([name, quantidade]) => ({ name, quantidade }));
+    }, [stats]);
 
 
     if (!stats) return <p style={{padding: '20px', textAlign: 'center'}}>{t('dashboard.a_carregar')}</p>;

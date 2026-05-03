@@ -97,23 +97,56 @@
 .btn-edit-small { background-color: #3498db; color: white; padding: 6px 12px; border-radius: 6px; border: none; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.3s;}
 .btn-edit-small:hover { background-color: #2980b9;}
 
-/* Badges e Modais permanecem iguais */
+/* ================ BADGES (ESTADOS DAS LEADS) ================ */
 .badge {
-    padding: 4px 12px;
+    padding: 5px 12px;
     border-radius: 20px;
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 700;
     display: inline-block;
     margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    /* AS DUAS LINHAS MÁGICAS PARA RESOLVER O TEU PROBLEMA */
+    width: fit-content;
+    align-self: flex-start;
 }
 
+/* 0: Novo (Azul) */
 .status-0 {
     background-color: #e0f2fe;
     color: #0369a1;
-    
+    border: 1px solid #bae6fd;
 }
 
-.status-3 { background-color: #dcfce7; color: #15803d; }
+/* 1: Em Análise (Amarelo/Laranja) */
+.status-1 {
+    background-color: #fef3c7;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+/* 2: Proposta (Roxo) */
+.status-2 {
+    background-color: #f3e8ff;
+    color: #7e22ce;
+    border: 1px solid #e9d5ff;
+}
+
+/* 3: Ganho (Verde) */
+.status-3 {
+    background-color: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+/* 4: Perdido (Vermelho) */
+.status-4 {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
 
 /* ================ MODAIS ================ */
 .modal-overlay {
