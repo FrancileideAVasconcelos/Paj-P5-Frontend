@@ -63,7 +63,7 @@ export const UserService = {
     getprofile: () => api.get('/users/profile'),
     checkPassword: (passAtual) => api.get('/users/checkPass', { headers: { passatual: passAtual } }),
     updateProfile: (data) => api.patch('/users/perfil', data),
-
+    updateIdioma: (idioma) => api.patch('/users/idioma', { idioma }),
     // --- NOVAS FUNÇÕES ---
     completeRegistration: (token, data) => api.post('/users/complete-registration?token=' + encodeURIComponent(token), data),
     forgotPassword: (email) => api.post('/users/forgot-password', { email }),
@@ -74,7 +74,13 @@ export const UserService = {
 export const AdminService = {
 
     inviteUser: (email) => api.post('/admin/users/invite', { email }),
-    getAllUsers: (search = "") => api.get(`/admin/users${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+    getAllUsers: (search = "", page = 1, limit = 10) => {
+        const params = new URLSearchParams();
+        if (search) params.append("search", search);
+        params.append("page", page);
+        params.append("limit", limit);
+        return api.get(`/admin/users?${params.toString()}`);
+    },
     editUser: (username, data) => api.patch(`/admin/users/${username}`, data),
     getUserClients: (username) => api.get(`/admin/users/${username}/clients`),
     getUserLeads: (username) => api.get(`/admin/users/${username}/leads`),
@@ -98,7 +104,13 @@ export const AdminService = {
 
 export const ClientService = {
 
-    getAll: () => api.get('/clients'),
+    getAll: (search = "", page = 1, limit = 10) => {
+        const params = new URLSearchParams();
+        if (search) params.append("search", search);
+        params.append("page", page);
+        params.append("limit", limit);
+        return api.get(`/clients?${params.toString()}`);
+    },
     getById: (id) => api.get(`/clients/${id}`),
     create: (data) => api.post('/clients', data),
     update: (id, data) => api.patch(`/clients/${id}`, data),
@@ -107,7 +119,14 @@ export const ClientService = {
 
 export const LeadService = {
 
-    getAll: (filtro) => api.get(`/leads${filtro ? `?estado=${filtro}` : ''}`),
+    getAll: (filtro = "", search = "", page = 1, limit = 10) => {
+        const params = new URLSearchParams();
+        if (filtro) params.append("estado", filtro);
+        if (search) params.append("search", search);
+        params.append("page", page);
+        params.append("limit", limit);
+        return api.get(`/leads?${params.toString()}`);
+    },
     getById: (id) => api.get(`/leads/${id}`),
     create: (data) => api.post('/leads', data),
     update: (id, data) => api.patch(`/leads/${id}`, data),

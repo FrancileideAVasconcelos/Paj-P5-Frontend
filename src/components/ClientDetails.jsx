@@ -82,7 +82,7 @@ export default function ClientDetails() {
                     alert(t('clients.detalhes.alerta'));
                     navigate('/client');
                 } catch (error) {
-                    alert("Erro ao inativar cliente.");
+                    alert(t('clients.detalhes.erro'));
                 }
             } else {
                 // Utilizadores normais usam o método da store
@@ -96,26 +96,26 @@ export default function ClientDetails() {
     };
 
     const handleDeletePermanent = async () => {
-        if (window.confirm("Tem a certeza absoluta que deseja apagar este Cliente PERMANENTEMENTE?")) {
+        if (window.confirm(t('admin_users_details.aviso_apagar_cliente'))){
             try {
                 await AdminService.deleteItemPermanent('client', id);
-                alert("Cliente apagado permanentemente!");
+                alert(t('admin_user_details.alerta_cliente_apagado'));
                 navigate(-1);
             } catch (e) {
-                alert("Erro ao apagar cliente.");
+                alert(t('admin_user_details.erro_apagar_cliente_permanente'));
             }
         }
     };
 
     const handleReativar = async () => {
-        if (window.confirm("Deseja reativar este Cliente?")) {
+        if (window.confirm(t('admin_user_details.aviso_reativar_cliente'))) {
             try {
                 // Passa 'false' porque a API toggleItemStatus recebe 'isAtivo' (que é falso atualmente)
                 await AdminService.toggleItemStatus('client', id, false);
-                alert("Cliente reativado com sucesso!");
+                alert(t('admin_user_details.alerta_cliente_reativado'));
                 fetchClientById(token, id); // Atualiza os dados no ecrã sem mudar de página
             } catch (error) {
-                alert("Erro ao reativar cliente.");
+                alert(t('admin_user_details.erro_reativar_cliente'));
             }
         }
     };
@@ -128,7 +128,7 @@ export default function ClientDetails() {
         <div className="admin-container">
             {/* Botão para retroceder no histórico de navegação */}
             <button onClick={() => navigate(-1)} className="btn-back">
-                <i className="fa-solid fa-arrow-left"></i>{t('clients.detalhes.voltar')}
+                <i className="fa-solid fa-arrow-left"></i>{t('geral.voltar')}
             </button>
 
             <div className="form-container">
@@ -136,10 +136,14 @@ export default function ClientDetails() {
                 <div className="custom-form">
                     {isAdmin && (
                         <div className="form-group" style={{ borderBottom: '2px dashed #e2e8f0', paddingBottom: '15px', marginBottom: '15px' }}>
-                            <label style={{ color: '#3498db' }}><i className="fa-solid fa-crown"></i> Dono do Registo (Utilizador)</label>
+                            <label style={{ color: '#3498db' }}><i className="fa-solid fa-crown"></i> {t('geral.dono')}</label>
                             <p className="static-data" style={{ fontWeight: 'bold' }}>@{currentClient.dono}</p>
                         </div>
                     )}
+                    <div className="form-group">
+                        <label>{t('clients.detalhes.nome')}</label>
+                        <p className="static-data">{currentClient.nome}</p>
+                    </div>
 
                     <div className="form-group">
                         <label>{t('clients.detalhes.email_contacto')}</label>
@@ -147,7 +151,7 @@ export default function ClientDetails() {
                     </div>
 
                     <div className="form-group">
-                        <label>{t('clients.detalhes.telefone')}</label>
+                        <label>{t('geral.telefone')}</label>
                         <p className="static-data">{currentClient.telefone}</p>
                     </div>
 
@@ -158,27 +162,27 @@ export default function ClientDetails() {
 
                     <div className="form-actions">
                         <button onClick={(e) => modalProps.abrirParaEditar(e, currentClient)} className="btn-save">
-                            <i className="fa-solid fa-pen"></i> {t('clients.detalhes.editar')}
+                            <i className="fa-solid fa-pen"></i> {t('geral.editar')}
                         </button>
 
                         {isAdmin ? (
                             <>
                                 {currentClient.ativo ? (
                                     <button onClick={handleRemover} className="btn-save-red" style={{ backgroundColor: '#f39c12' }}>
-                                        <i className="fa-solid fa-ban"></i> Inativar Cliente
+                                        <i className="fa-solid fa-ban"></i> {t('admin_user_details.lista.inativar')}
                                     </button>
                                 ) : (
                                     <button onClick={handleReativar} className="btn-save" style={{ backgroundColor: '#27ae60' }}>
-                                        <i className="fa-solid fa-folder-open"></i> Reativar Cliente
+                                        <i className="fa-solid fa-folder-open"></i> {t('admin_user_details.lista.reativar')}
                                     </button>
                                 )}
                                 <button onClick={handleDeletePermanent} className="btn-save-red">
-                                    <i className="fa-solid fa-fire"></i> Apagar Permanente
+                                    <i className="fa-solid fa-fire"></i> {t('admin_user_details.lista.excluir')}
                                 </button>
                             </>
                         ) : (
                             <button onClick={handleRemover} className="btn-save-red">
-                                <i className="fa-solid fa-trash-can"></i> {t('clients.detalhes.remover')}
+                                <i className="fa-solid fa-trash-can"></i> {t('geral.remover')}
                             </button>
                         )}
                     </div>

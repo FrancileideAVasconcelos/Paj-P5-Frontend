@@ -75,9 +75,9 @@ export default function useFormModal(addFunction, updateFunction, token) {
 
         if (sucesso) {
             fecharModal();
-            alert("Operação realizada com sucesso!");
+            alert(t('form_modal.operacao_sucesso'));
         } else {
-            alert("Ocorreu um erro ao guardar os dados.");
+            alert(t('form_modal.operacao_erro'));
         }
     };
 

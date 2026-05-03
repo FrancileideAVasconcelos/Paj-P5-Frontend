@@ -27,23 +27,21 @@ const useLeadStore = create((set, get) => ({
     currentLead: null,
     /** Estado de carregamento. */
     loading: false,
+    currentPage: 1,
+    totalPages: 1,
 
-    /**
-     * Procura todas as leads associadas ao utilizador.
-     * Permite filtrar por estado (ex: Aberta, Ganha, Perdida).
-     * * @async
-     * @function fetchLeads
-     * @param {string} token - Token de autenticação (não utilizado diretamente devido à configuração da api.js).
-     * @param {string} [estado=""] - Filtro de estado para a listagem.
-     * @returns {Promise<void>}
-     */
-    fetchLeads: async (token, estado = "") => {
+    fetchLeads: async (token, estado = "", search = "", page = 1) => {
         set({ loading: true });
         try {
-            const data = await LeadService.getAll(estado);
-            set({ leads: Array.isArray(data) ? data : [], loading: false });
+            // Passa a página para o serviço de API
+            const response = await LeadService.getAll(estado, search, page);
+            set({
+                leads: response.data || [],           // Extrai a lista do envelope[cite: 2, 3]
+                totalPages: response.totalPages || 1, // Guarda o total de páginas[cite: 3]
+                currentPage: response.currentPage || 1,
+                loading: false
+            });
         } catch (error) {
-            console.error("Erro ao carregar leads:", error);
             set({ loading: false });
         }
     },

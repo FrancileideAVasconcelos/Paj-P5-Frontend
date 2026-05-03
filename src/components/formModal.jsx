@@ -48,7 +48,7 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                                 />
                             </div>
                             <div className="form-group">
-                                <label>{t('form_modal.email')}</label>
+                                <label>{t('geral.email')}</label>
                                 <input
                                     type="email"
                                     value={formData.email || ''}
@@ -58,7 +58,7 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                                 />
                             </div>
                             <div className="form-group">
-                                <label>{t('form_modal.telefone')}</label>
+                                <label>{t('geral.telefone')}</label>
                                 {/* Aqui aplicamos a mesma regra Regex do teu backend Java para evitar o Erro 400! */}
                                 <input
                                     type="text"
@@ -69,7 +69,7 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                                 />
                             </div>
                             <div className="form-group">
-                                <label>{t('form_modal.empresa')} *</label>
+                                <label>{t('clients.detalhes.empresa')} *</label>
                                 <input
                                     type="text"
                                     value={formData.empresa || ''}
@@ -81,7 +81,7 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                     ) : (
                         <>
                             <div className="form-group">
-                                <label>{t('form_modal.titulo_lead')} *</label>
+                                <label>{t('leads.detalhes.titulo')} *</label>
                                 <input
                                     type="text"
                                     value={formData.titulo || formData.nome || ''}
@@ -92,7 +92,7 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                                 />
                             </div>
                             <div className="form-group">
-                                <label>{t('form_modal.descricao')} *</label>
+                                <label>{t('leads.detalhes.descricao')} *</label>
                                 <textarea
                                     value={formData.descricao || ''}
                                     onChange={(e) => setFormData({...formData, descricao: e.target.value})}
@@ -108,7 +108,7 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
                                 />
                             </div>
                             <div className="form-group">
-                                <label>{t('form_modal.estado')}</label>
+                                <label>{t('Leads.detalhes.estado')}</label>
                                 <select
                                     value={formData.estado || 0}
                                     onChange={(e) => setFormData({...formData, estado: parseInt(e.target.value)})}
@@ -131,7 +131,7 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
 
                     <div className="modal-actions">
                         <button type="button" className="btn-cancel" onClick={onClose}>
-                            {t('form_modal.cancelar')}
+                            {t('geral.cancelar')}
                         </button>
                         <button
                             type="submit"

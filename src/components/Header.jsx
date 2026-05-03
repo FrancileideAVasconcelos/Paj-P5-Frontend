@@ -11,7 +11,7 @@ import tokenStore from "../store/tokenStore.js";
 import useUserStore from '../store/useUserStore.js';
 import {useNavigate} from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import { NotificationService } from '../services/api';
+import { NotificationService, UserService } from '../services/api';
 
 /**
  * Componente funcional que renderiza a barra superior da interface.
@@ -41,18 +41,6 @@ export default function Header({ toggleMenu }) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Muda o idioma e fecha o dropdown
-    const changeLanguage = (langCode) => {
-        i18n.changeLanguage(langCode);
-        setIsLangOpen(false);
-    };
-
-    // Dicionário visual para apresentar bonitinho
-    const languageNames = {
-        'pt': 'Português',
-        'en': 'English'
-    };
-
     // --- ZUSTAND E TOKENS ---
     const currentUser = useUserStore((state) => state.currentUser);
     const fetchCurrentUser = useUserStore((state) => state.fetchCurrentUser); // <-- ADICIONA ESTA LINHA
@@ -68,6 +56,12 @@ export default function Header({ toggleMenu }) {
         }
     }, [token, currentUser, fetchCurrentUser]);
 
+    useEffect(() => {
+        if (currentUser && currentUser.idioma) {
+            i18n.changeLanguage(currentUser.idioma);
+        }
+    }, [currentUser, i18n]);
+
     // --- LIGAÇÃO GLOBAL DE NOTIFICAÇÕES ---
     useEffect(() => {
         if (!token) return;
@@ -78,7 +72,7 @@ export default function Header({ toggleMenu }) {
         wsNotif.current = ws;
 
         ws.onopen = () => {
-            console.log("🔔 Header Conectado ao Serviço de Notificações!");
+            console.log(t('header.notif_conectada'));
             pingInterval = setInterval(() => {
                 if (ws.readyState === WebSocket.OPEN) {
                     ws.send("PING");
@@ -104,6 +98,26 @@ export default function Header({ toggleMenu }) {
         };
     }, [token, setUnreadCount]);
 
+    // Muda o idioma, fecha o dropdown e guarda na Base de Dados se o utilizador estiver autenticado
+    const changeLanguage = async (langCode) => {
+        // 1. Muda visualmente na hora para o utilizador
+        i18n.changeLanguage(langCode);
+        setIsLangOpen(false);
+
+        // 2. Se o utilizador estiver logado, grava a preferência na base de dados
+        if (token) {
+            try {
+                await UserService.updateIdioma(langCode);
+                // Atualiza a store do Zustand
+                useUserStore.setState((state) => ({
+                    currentUser: { ...state.currentUser, idioma: langCode }
+                }));
+            } catch (error) {
+                console.error(t('header.erro_mudar_idioma'), error);
+            }
+        }
+    };
+
     return (
         <header className="main-header">
             <div className="header-left">
@@ -124,7 +138,7 @@ export default function Header({ toggleMenu }) {
                         <div
                             onClick={() => navigate('/chat')}
                             style={{ position: 'relative', cursor: 'pointer', color: 'white' }}
-                            title="Ir para o Chat"
+                            title={t('header.hoover_notificacoes')}
                         >
                             <i className="fa-solid fa-bell" style={{ fontSize: '20px' }}></i>
 
@@ -150,29 +164,27 @@ export default function Header({ toggleMenu }) {
                     {token && <div className="logout-btn" onClick={() => navigate('/profile')}>{t('header.profile')}</div>}
                     {token && <div className="logout-btn" onClick={() => tokenStore.getState().logout()}>{t('header.logout')}</div>}
 
-                    {/* SELETOR DE IDIOMA (DROPDOWN) */}
-                    {token && (
-                        <div className="language-selector" ref={dropdownRef}>
-                            <button
-                                className="lang-btn-current"
-                                onClick={() => setIsLangOpen(!isLangOpen)}
-                                title={t('header.change_language')}
-                            >
-                                <i className="fa-solid fa-globe"></i>
-                                {i18n.language.toUpperCase()}
-                                <i className={`fa-solid fa-chevron-${isLangOpen ? 'up' : 'down'}`} style={{ fontSize: '10px', marginLeft: '5px' }}></i>
-                            </button>
+                    {/* SELETOR DE IDIOMA (DROPDOWN) - AGORA VISÍVEL PARA TODOS */}
+                    <div className="language-selector" ref={dropdownRef}>
+                        <button
+                            className="lang-btn-current"
+                            onClick={() => setIsLangOpen(!isLangOpen)}
+                            title={t('header.change_language')}
+                        >
+                            <i className="fa-solid fa-globe"></i>
+                            {i18n.language.toUpperCase()}
+                            <i className={`fa-solid fa-chevron-${isLangOpen ? 'up' : 'down'}`} style={{ fontSize: '10px', marginLeft: '5px' }}></i>
+                        </button>
 
-                            <div className={`lang-dropdown-menu ${isLangOpen ? 'open' : ''}`}>
-                                <button className={`lang-option ${i18n.language === 'pt' ? 'active' : ''}`} onClick={() => changeLanguage('pt')}>
-                                    🇵🇹 Português
-                                </button>
-                                <button className={`lang-option ${i18n.language === 'en' ? 'active' : ''}`} onClick={() => changeLanguage('en')}>
-                                    🇬🇧 English
-                                </button>
-                            </div>
+                        <div className={`lang-dropdown-menu ${isLangOpen ? 'open' : ''}`}>
+                            <button className={`lang-option ${i18n.language === 'pt' ? 'active' : ''}`} onClick={() => changeLanguage('pt')}>
+                                🇵🇹 Português
+                            </button>
+                            <button className={`lang-option ${i18n.language === 'en' ? 'active' : ''}`} onClick={() => changeLanguage('en')}>
+                                🇬🇧 English
+                            </button>
                         </div>
-                    )}
+                    </div>
                 </div>
 
             </div>

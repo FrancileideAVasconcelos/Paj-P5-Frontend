@@ -7,11 +7,17 @@ import { AdminService } from '../services/api';
 import '../styles/ClientLead.css';
 import '../styles/Admin.css';
 import {useTranslation} from "react-i18next";
+import Pagination from "../components/Pagination.jsx";
 
 export default function Admin() {
     const navigate = useNavigate();
     const token = tokenStore((state) => state.token);
-    const { users, loading, error, fetchUsers } = useAdminStore();
+
+    // Agora também trazemos o totalPages da Store!
+    const { users, loading, error, fetchUsers, totalPages } = useAdminStore();
+
+    // Estado para controlar a página em que estamos no React
+    const [page, setPage] = useState(1);
 
     // --- ESTADOS PARA O CONVITE ---
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -31,35 +37,30 @@ export default function Admin() {
     const { t } = useTranslation();
 
     useEffect(() => {
-        if (token) fetchUsers(token);
-        else navigate('/login');
-    }, [token, fetchUsers, navigate]);
-
-    useEffect(() => {
         // Se a caixa de pesquisa ficar completamente vazia, recarrega tudo
         if (searchTerm === "") {
             fetchUsers(token, "");
         }
     }, [searchTerm, token, fetchUsers]);
 
-    // Ordenação e Filtro (com proteções contra undefined)
-    const sortedUsers = useMemo(() => {
-        if (!users || !Array.isArray(users)) return [];
-        return [...users].sort((a, b) => {
-            const nomeA = `${a.primeiroNome} ${a.ultimoNome}`.toLowerCase();
-            const nomeB = `${b.primeiroNome} ${b.ultimoNome}`.toLowerCase();
-            return nomeA.localeCompare(nomeB);
-        });
-    }, [users]);
+    // 1. Sempre que o utilizador escreve algo na pesquisa, volta para a Página 1
+    useEffect(() => {
+        setPage(1);
+    }, [searchTerm]);
 
-    const filteredUsers = useMemo(() => {
-        if (searchTerm.trim() === "") return sortedUsers;
-        const term = searchTerm.toLowerCase();
-        return sortedUsers.filter(user =>
-            (user.username && user.username.toLowerCase().includes(term)) ||
-            (user.email && user.email.toLowerCase().includes(term))
-        );
-    }, [sortedUsers, searchTerm]);
+    // 2. O famoso "Debounce" que reage à pesquisa e à mudança de página!
+    useEffect(() => {
+        if (!token) {
+            navigate('/login');
+            return;
+        }
+
+        const delayDebounceFn = setTimeout(() => {
+            fetchUsers(token, searchTerm, page);
+        }, 500); // Espera 500ms
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm, page, token, fetchUsers, navigate]);
 
     // --- FUNÇÕES DO HISTÓRICO ---
     const handleSaveSearch = (term) => {
@@ -153,12 +154,12 @@ export default function Admin() {
                             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                         }}>
                             <div style={{ padding: '8px 12px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9' }}>
-                                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold' }}>Histórico Recente</span>
+                                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold' }}>{t('admin.historico')}</span>
                                 <span
                                     onMouseDown={(e) => { e.preventDefault(); clearHistory(); }}
                                     style={{ fontSize: '12px', color: '#ef4444', cursor: 'pointer' }}
                                 >
-                                    Limpar
+                                    {t('admin.limpar')}
                                 </span>
                             </div>
                             {searchHistory.map((item, idx) => (
@@ -263,13 +264,19 @@ export default function Admin() {
 
                             <div className="modal-actions" style={{ marginTop: '25px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                                 <button type="button" className="btn-cancel" onClick={() => setIsInviteModalOpen(false)}>
-                                    {t('form_modal.cancelar')}
+                                    {t('geral.cancelar')}
                                 </button>
                                 <button type="submit" className="btn-save" disabled={loadingInvite}>
                                     {loadingInvite ? t('admin.enviando') : t('admin.enviar_convite')}
                                 </button>
                             </div>
                         </form>
+                        <Pagination
+                            currentPage={page}
+                            totalPages={totalPages}
+                            onPageChange={setPage}
+                            loading={loading}
+                        />
                     </div>
                 </div>
             )}

@@ -65,10 +65,9 @@ export default function Dashboard() {
                 // Vai buscar a chave ao constants.js e traduz!
                 const nomeEstado = STATUS_OPTIONS[estadoId]
                     ? t(STATUS_OPTIONS[estadoId].key)
-                    : `Estado ${estadoId}`;
+                    : `${t('leads.detalhes.estado')} ${estadoId}`;
 
-                contagem[estadoId] = { name: nomeEstado, value: 0 };
-            }
+                contagem[estadoId] = { id: estadoId, name: nomeEstado, value: 0 };            }
             contagem[estadoId].value += 1;
         });
         return Object.values(contagem);
@@ -166,6 +165,11 @@ export default function Dashboard() {
                                             paddingAngle={5}
                                             dataKey="value"
                                             stroke="none"
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={(entry) => {
+                                                // entry contém os dados da fatia clicada (incluindo o nosso 'id')
+                                                navigate('/leads', { state: { filtroInicial: entry.id } });
+                                            }}
                                         >
                                             {dadosLeadsPorEstado.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={CORES_TARTE[index % CORES_TARTE.length]} />

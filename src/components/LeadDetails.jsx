@@ -70,7 +70,7 @@ export default function LeadDetails() {
                     alert(t('leads.detalhes.alerta'));
                     navigate('/leads');
                 } catch (error) {
-                    alert("Erro ao inativar lead.");
+                    alert(t('lead.detalhes.erro'));
                 }
             } else {
                 // Utilizadores normais usam o método da store
@@ -108,25 +108,25 @@ export default function LeadDetails() {
 
     // --- FUNÇÃO PARA APAGAR PERMANENTEMENTE (SÓ ADMIN) ---
     const handleDeletePermanent = async () => {
-        if (window.confirm("Tem a certeza absoluta que deseja apagar esta Lead PERMANENTEMENTE?")) {
+        if (window.confirm(t('admin_users_details.aviso_apagar_lead'))) {
             try {
                 await AdminService.deleteItemPermanent('lead', id);
-                alert("Lead apagada permanentemente!");
+                alert(t('admin_users_details.alerta_lead_apagada'));
                 navigate(-1); // Volta para trás
             } catch (e) {
-                alert("Erro ao apagar lead.");
+                alert(t('admin_user_details.erro_apagar_lead_permanente'));
             }
         }
     };
 
     const handleReativar = async () => {
-        if (window.confirm("Deseja reativar esta Lead?")) {
+        if (window.confirm(t('admin_user_details.aviso_reativar_lead'))) {
             try {
                 await AdminService.toggleItemStatus('lead', id, false);
-                alert("Lead reativada com sucesso!");
+                alert(t('admin_user_details.alerta_lead_reativada'));
                 fetchLeadById(token, id);
             } catch (error) {
-                alert("Erro ao reativar lead.");
+                alert(t('admin_user_details.errp_reativar_lead'));
             }
         }
     };
@@ -139,7 +139,7 @@ export default function LeadDetails() {
         <div className="admin-container">
             {/* Botão de navegação para retornar à listagem de leads */}
             <button className="btn-back" onClick={() => navigate('/leads')}>
-                <i className="fa-solid fa-arrow-left"></i> {t('leads.detalhes.voltar')}
+                <i className="fa-solid fa-arrow-left"></i> {t('geral.voltar')}
             </button>
 
             <div className="form-container">
@@ -147,15 +147,22 @@ export default function LeadDetails() {
                 <div className="custom-form">
                     {isAdmin && (
                         <div className="form-group" style={{ borderBottom: '2px dashed #e2e8f0', paddingBottom: '15px', marginBottom: '15px' }}>
-                            <label style={{ color: '#3498db' }}><i className="fa-solid fa-crown"></i> Dono do Registo (Utilizador)</label>
+                            <label style={{ color: '#3498db' }}><i className="fa-solid fa-crown"></i> {t('geral.dono')}</label>
                             <p className="static-data" style={{ fontWeight: 'bold' }}>@{currentLead.user?.username || '---'}</p>
                         </div>
                     )}
 
                     <div className="form-group">
-                        <label>{t('leads.detalhes.label_descricao')}</label>
+                        <label>{t('leads.detalhes.titulo')}</label>
                         <p className="static-data" style={{ whiteSpace: 'pre-wrap' }}>
-                            {currentLead.descricao || "Sem notas adicionais."}
+                            {currentLead.titulo}
+                        </p>
+                    </div>
+
+                    <div className="form-group">
+                        <label>{t('leads.detalhes.descricao')}</label>
+                        <p className="static-data" style={{ whiteSpace: 'pre-wrap' }}>
+                            {currentLead.descricao || t('leads.detalhes.sem_notas')}
                         </p>
                     </div>
 
@@ -179,28 +186,28 @@ export default function LeadDetails() {
                     {/* Ações de Gestão da Lead */}
                     <div className="form-actions">
                         <button onClick={(e) => modalProps.abrirParaEditar(e, currentLead)} className="btn-save">
-                            <i className="fa-solid fa-pen"></i> {t('leads.detalhes.btn_editar')}
+                            <i className="fa-solid fa-pen"></i> {t('geral.editar')}
                         </button>
 
                         {isAdmin ? (
                             <>
                                 {currentLead.ativo ? (
                                     <button onClick={handleRemover} className="btn-save-red" style={{ backgroundColor: '#f39c12' }}>
-                                        <i className="fa-solid fa-ban"></i> Inativar Lead
+                                        <i className="fa-solid fa-ban"></i> {t('admin_user_details.lista.inativar')}
                                     </button>
                                 ) : (
                                     <button onClick={handleReativar} className="btn-save" style={{ backgroundColor: '#27ae60' }}>
-                                        <i className="fa-solid fa-folder-open"></i> Reativar Lead
+                                        <i className="fa-solid fa-folder-open"></i> {t('admin_user_details.lista.reativar')}
                                     </button>
                                 )}
                                 <button onClick={handleDeletePermanent} className="btn-save-red">
-                                    <i className="fa-solid fa-fire"></i> Apagar Permanente
+                                    <i className="fa-solid fa-fire"></i> {t('admin_user_details.lista.excluir')}
                                 </button>
                             </>
                         ) : (
                             /* Se for User Normal, mostra só o botão normal de remover (soft delete) */
                             <button onClick={handleRemover} className="btn-save-red">
-                                <i className="fa-solid fa-trash-can"></i> {t('leads.detalhes.btn_remover')}
+                                <i className="fa-solid fa-trash-can"></i> {t('geral.remover')}
                             </button>
                         )}
                     </div>

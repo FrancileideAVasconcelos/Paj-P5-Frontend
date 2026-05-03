@@ -42,7 +42,7 @@ export default function Chat() {
             ws.current = socket;
 
             socket.onopen = () => {
-                console.log("🟢 WebSocket Ligado ao Chat!");
+                console.log(t('websocket.ligado'));
                 pingInterval = setInterval(() => {
                     if (socket.readyState === WebSocket.OPEN) {
                         socket.send("PING");
@@ -81,12 +81,12 @@ export default function Chat() {
                     }
 
                 } catch (error) {
-                    console.error("Erro ao processar mensagem do WebSocket:", error);
+                    console.error(t('websocket.erro_mensagem'), error);
                 }
             };
 
             socket.onclose = (event) => {
-                console.log("🔴 WebSocket Desligado. Código:", event.code);
+                console.log(t('websocket.desligado'), event.code);
                 clearInterval(pingInterval);
 
                 if (event.code !== 1000) {
@@ -98,7 +98,7 @@ export default function Chat() {
             };
 
             socket.onerror = (error) => {
-                console.error("⚠️ Erro no WebSocket:", error);
+                console.error(t('websocket.erro_web'), error);
             };
         }
 
@@ -196,7 +196,7 @@ export default function Chat() {
                 .catch(console.error);
 
         } catch (error) {
-            console.error("Erro ao enviar:", error);
+            console.error(t('websocket.erro_envio_msg'), error);
         }
     };
 

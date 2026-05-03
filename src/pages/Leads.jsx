@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import tokenStore from '../store/tokenStore.js';
 import useLeadStore from '../store/useLeadStore.js';
 import { STATUS_OPTIONS } from "../utils/constants.js";
@@ -14,6 +14,7 @@ import useFormModal from "../hooks/useFormModal.js";
 import '../styles/ClientLead.css';
 import {useTranslation} from "react-i18next";
 import useUserStore from "../store/useUserStore.js";
+import Pagination from "../components/Pagination.jsx";
 
 /**
  * Componente funcional para visualização e filtragem da lista de leads.
@@ -25,30 +26,52 @@ export default function Leads() {
     const navigate = useNavigate();
     /** @type {string|null} Token de autenticação ativo. */
     const token = tokenStore((state) => state.token);
-
+    const location = useLocation(); // <- Apanha o estado vindo do navigate do Dashboard
     // --- ESTADO DA STORE DE LEADS ---
-    const { leads, fetchLeads, addLead, updateLead, loading } = useLeadStore();
-
-    /** @type {string} Estado local para o filtro de estado selecionado. */
-    const [filtro, setFiltro] = useState("");
-
+    const { leads, fetchLeads, addLead, updateLead, loading, totalPages } = useLeadStore();
     /** * Hook personalizado para gerir a lógica do modal de formulário (criação/edição).
      * @type {Object}
      */
     const modalProps = useFormModal(addLead, updateLead, token);
-
     const { t, i18n } = useTranslation();
+
+    // Se o Dashboard enviou um 'filtroInicial', usamos logo esse valor!
+    // (Transformamos em String para bater certo com os values do teu <select>)
+    const [filtro, setFiltro] = useState(
+        location.state?.filtroInicial !== undefined ? String(location.state.filtroInicial) : ""
+    );
 
     const currentUser = useUserStore((state) => state.currentUser);
     const isAdmin = currentUser?.admin;
+    const [searchTerm, setSearchTerm] = useState("");
 
-    /**
-     * Efeito de carregamento: Procura as leads sempre que o token ou o filtro mudarem.
-     */
+    // --- NOVOS ESTADOS PARA O HISTÓRICO ---
+    const [showHistory, setShowHistory] = useState(false);
+    const [searchHistory, setSearchHistory] = useState(() => {
+        const saved = localStorage.getItem('leadSearchHistory');
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    const [page, setPage] = useState(1);
+
+    // Pesquisa automática à medida que escreve (com Debounce de 500ms)
     useEffect(() => {
-        if (token) fetchLeads(token, filtro);
-    }, [token, filtro, fetchLeads]);
+        if (!token) return;
 
+        // Cria um temporizador que espera 500ms depois da última letra digitada
+        const delayDebounceFn = setTimeout(() => {
+            fetchLeads(token, filtro, searchTerm, page);
+        }, 500);
+
+        // Se o utilizador escrever outra letra antes dos 500ms, limpa o temporizador antigo!
+        return () => clearTimeout(delayDebounceFn);
+
+    }, [searchTerm, filtro, page, token, fetchLeads]); // O React reage sempre que o searchTerm muda!
+
+    // Adicionar ao Leads.jsx e Client.jsx
+    useEffect(() => {
+        setPage(1);
+    }, [searchTerm, filtro]); // No Client.jsx use apenas [searchTerm]
     /**
      * Formata datas provenientes do backend.
      * Suporta o formato de array [ano, mes, dia] comum em respostas JSON de Java/Hibernate.
@@ -65,6 +88,19 @@ export default function Leads() {
         return new Date(data).toLocaleDateString('pt-PT');
     };
 
+    // --- FUNÇÕES DO HISTÓRICO ---
+    const handleSaveSearch = (term) => {
+        if (!term.trim()) return;
+        const newHistory = [term, ...searchHistory.filter(h => h !== term)].slice(0, 5);
+        setSearchHistory(newHistory);
+        localStorage.setItem('leadSearchHistory', JSON.stringify(newHistory));
+    };
+
+    const clearHistory = () => {
+        setSearchHistory([]);
+        localStorage.removeItem('leadSearchHistory');
+    };
+
     return (
         <div className="admin-container">
             <div className="barra-container">
@@ -75,16 +111,74 @@ export default function Leads() {
                 </button>
             </div>
 
-            <div className="filtros">
-                <label>{t('leads.filtrar')}</label>
-                <select value={filtro} onChange={(e) => setFiltro(e.target.value)} style={{ padding: '8px', marginLeft: '10px', borderRadius: '5px' }}>
-                    <option value="">{t('leads.filtro_todos')}</option>
-                    {STATUS_OPTIONS.map((opcao) => (
-                        <option key={opcao.id} value={opcao.id}>
-                            {t(opcao.key)} {/* AQUI A MAGIA ACONTECE */}
-                        </option>
-                    ))}
-                </select>
+            <div className="filtros" style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+                {/* ZONA DE PESQUISA COM HISTÓRICO */}
+                <div style={{ position: 'relative', flex: 1, minWidth: '250px', maxWidth: '400px' }}>
+                    <i className="fa-solid fa-magnifying-glass" style={{ position: 'absolute', left: '12px', top: '12px', color: '#94a3b8' }}></i>
+                    <input
+                        type="text"
+                        placeholder={t('leads.pesquisa')}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onFocus={() => setShowHistory(true)}
+                        onBlur={() => setShowHistory(false)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleSaveSearch(searchTerm);
+                                setShowHistory(false);
+                            }
+                        }}
+                        style={{ width: '100%', padding: '10px 10px 10px 35px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '15px', outline: 'none' }}
+                    />
+
+                    {/* CAIXA SUSPENSA (DROPDOWN) DO HISTÓRICO */}
+                    {showHistory && searchHistory.length > 0 && (
+                        <div style={{
+                            position: 'absolute', top: '100%', left: 0, right: 0,
+                            backgroundColor: 'white', border: '1px solid #e2e8f0',
+                            borderRadius: '8px', marginTop: '5px', zIndex: 10,
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}>
+                            <div style={{ padding: '8px 12px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9' }}>
+                                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold' }}>Histórico</span>
+                                <span onMouseDown={(e) => { e.preventDefault(); clearHistory(); }} style={{ fontSize: '12px', color: '#ef4444', cursor: 'pointer' }}>Limpar</span>
+                            </div>
+                            {searchHistory.map((item, idx) => (
+                                <div key={idx}
+                                     onMouseDown={(e) => {
+                                         e.preventDefault();
+                                         setSearchTerm(item);
+                                         handleSaveSearch(item);
+                                         setShowHistory(false);
+                                         fetchLeads(token, filtro, item); // Passamos o filtro atual também!
+                                     }}
+                                     style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px' }}
+                                     onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                                     onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                >
+                                    <i className="fa-solid fa-clock-rotate-left" style={{ color: '#cbd5e1' }}></i>
+                                    {item}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                <div>
+                    <label>{t('leads.filtrar')}</label>
+                    <select
+                        value={filtro}
+                        onChange={(e) => {
+                            setFiltro(e.target.value);
+                            fetchLeads(token, e.target.value, searchTerm); // Pesquisa logo ao mudar o dropdown!
+                        }}
+                        style={{ padding: '8px', marginLeft: '10px', borderRadius: '5px' }}
+                    >
+                        <option value="">{t('leads.filtro_todos')}</option>
+                        {STATUS_OPTIONS.map((opcao) => (
+                            <option key={opcao.id} value={opcao.id}>{t(opcao.key)}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {/* Exibição condicional: Spinner de carregamento ou lista de dados */}
@@ -111,7 +205,7 @@ export default function Leads() {
                                         {isAdmin && (
                                             <div style={{ textAlign: 'right' }}>
                                                 <span style={{ fontSize: '12px', color: '#3498db', fontWeight: 'bold' }}>
-                                                    Dono: @{lead.user?.username || '---'}
+                                                    {t('geral.dono')} @{lead.user?.username || '---'}
                                                 </span>
                                             </div>
                                         )}
@@ -134,6 +228,12 @@ export default function Leads() {
                 initialData={modalProps.itemEmEdicao}
                 onClose={modalProps.fecharModal}
                 onSave={modalProps.handleSalvar}
+            />
+            <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                loading={loading}
             />
         </div>
     );

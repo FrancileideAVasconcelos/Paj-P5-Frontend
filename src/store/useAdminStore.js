@@ -13,12 +13,21 @@ const useAdminStore = create((set, get) => ({
     userLeads: [],
     loadingDetails: false,
 
+    // --- NOVAS VARIÁVEIS DE PAGINAÇÃO ---
+    currentPage: 1,
+    totalPages: 1,
+
     // --- FUNÇÕES DA LISTA GERAL ---
-    fetchUsers: async (token, search = '') => { // Adicionámos o 'search' aqui
+    fetchUsers: async (token, search = '', page = 1) => {
         set({ loading: true, error: null });
         try {
-            const response = await AdminService.getAllUsers(search); // Passamos para a API
-            set({ users: response, loading: false });
+            const response = await AdminService.getAllUsers(search, page);
+            set({
+                users: response.data || [],           // Extrai a lista de dentro do envelope!
+                currentPage: response.currentPage || 1, // Guarda a página atual
+                totalPages: response.totalPages || 1,   // Guarda o total de páginas
+                loading: false
+            });
         } catch (error) {
             set({ error: error.message || "Erro ao carregar utilizadores", loading: false });
         }

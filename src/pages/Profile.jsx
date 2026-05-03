@@ -128,7 +128,7 @@ export default function Profile() {
      */
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMensagem({ texto: 'A validar dados...', tipo: 'info' });
+        setMensagem({ texto: t('profile.a_validar'), tipo: 'info' });
 
         /** @type {Object} Dados preparados para envio, integrando passwords e informações pessoais. */
         const dadosParaEnviar = {
@@ -143,7 +143,7 @@ export default function Profile() {
 
         // Validação 1: Obrigatoriedade da password atual
         if (!passwords.atual) {
-            return setMensagem({ texto: 'A password atual é obrigatória para guardar alterações no perfil.', tipo: 'erro' });
+            return setMensagem({ texto: t('profile.pass_atual_obrig'), tipo: 'erro' });
         }
 
         // Validação 2: Verificação de identidade no servidor
@@ -157,7 +157,7 @@ export default function Profile() {
 
         if (querMudarPassword) {
             if (passwords.nova !== passwords.confirmar) {
-                return setMensagem({ texto: 'A nova password e a confirmação não coincidem!', tipo: 'erro' });
+                return setMensagem({ texto: t('profile.pass_nova_nao_confirmada'), tipo: 'erro' });
             }
             dadosParaEnviar.password = passwords.nova;
         } else {
@@ -166,11 +166,11 @@ export default function Profile() {
         }
 
         // Envio final para a base de dados
-        setMensagem({ texto: 'A guardar alterações...', tipo: 'info' });
+        setMensagem({ texto: t('profile.guardar'), tipo: 'info' });
         const response = await updateUserProfile(dadosParaEnviar);
 
         if (response.sucesso) {
-            setMensagem({ texto: 'Perfil atualizado com sucesso!', tipo: 'sucesso' });
+            setMensagem({ texto: t('profile.perfil_atualizado'), tipo: 'sucesso' });
             setPasswords({ atual: '', nova: '', confirmar: '' });
         } else {
             setMensagem({ texto: `Erro: ${response.mensagem}`, tipo: 'erro' });
@@ -193,7 +193,7 @@ export default function Profile() {
             if (!contagem[estadoId]) {
                 const nomeEstado = STATUS_OPTIONS[estadoId]
                     ? t(STATUS_OPTIONS[estadoId].key)
-                    : `Estado ${estadoId}`;
+                    : `${t('lead.detalhe.estado')} ${estadoId}`;
 
                 contagem[estadoId] = { name: nomeEstado, value: 0 };
             }
@@ -202,7 +202,7 @@ export default function Profile() {
         return Object.values(contagem);
     }, [stats, t]);
 
-    if (!currentUser) return <p className="loading-text">A carregar perfil...</p>;
+    if (!currentUser) return <p className="loading-text">{t('profile.a_carregar')}</p>;
 
     /** @type {string} Imagem padrão caso o utilizador não tenha foto definida. */
     const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
@@ -281,7 +281,7 @@ export default function Profile() {
                                 /* Placeholder caso não haja leads, para manter a estrutura simétrica */
                                 <div className="profile-chart-card">
                                     <i className="fa-solid fa-chart-pie" style={{ fontSize: '30px', color: '#cbd5e1', marginBottom: '10px' }}></i>
-                                    <p style={{ color: '#94a3b8', fontSize: '13px' }}>Sem dados de leads</p>
+                                    <p style={{ color: '#94a3b8', fontSize: '13px' }}>{t('dashboard.sem_dados')}</p>
                                 </div>
                             )}
                         </div>

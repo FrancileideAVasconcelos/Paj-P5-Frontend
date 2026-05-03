@@ -27,6 +27,8 @@ const useClientStore = create((set, get) => ({
     currentClient: null,
     /** Indica se a aplicação está a aguardar uma resposta da API. */
     loading: false,
+    currentPage: 1,
+    totalPages: 1,
 
     /**
      * Procura a lista de clientes do utilizador através do ClientService.
@@ -35,13 +37,17 @@ const useClientStore = create((set, get) => ({
      * @param {string} token - Token de autenticação (gerido internamente pela api.js).
      * @returns {Promise<void>}
      */
-    fetchClient: async (token) => {
+    fetchClient: async (token, search = "", page = 1) => {
         set({ loading: true });
         try {
-            const data = await ClientService.getAll();
-            set({ clients: Array.isArray(data) ? data : [], loading: false });
+            const response = await ClientService.getAll(search, page);
+            set({
+                clients: response.data || [], // Volta a apontar para .data!
+                totalPages: response.totalPages || 1, // Puxa o total do Java
+                currentPage: response.currentPage || 1, // Puxa a página atual do Java
+                loading: false
+            });
         } catch (error) {
-            console.error("Erro ao carregar clients:", error);
             set({ loading: false });
         }
     },
