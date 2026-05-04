@@ -1,7 +1,7 @@
 /**
  * @file Leads.jsx
- * @description Componente de página para a gestão de Leads do utilizador.
- * Permite listar, filtrar por estado e abrir o formulário para criação de novas leads.
+ * @description Componente de página principal para a gestão e listagem de Oportunidades (Leads) do utilizador.
+ * Permite listar dados com paginação, filtrar por estado, pesquisar e abrir o formulário de criação.
  */
 
 import { useEffect, useState } from 'react';
@@ -17,26 +17,21 @@ import useUserStore from "../store/useUserStore.js";
 import Pagination from "../components/Pagination.jsx";
 
 /**
- * Componente funcional para visualização e filtragem da lista de leads.
+ * Componente funcional que renderiza a interface central da gestão de Leads.
+ *
  * @component
- * @returns {JSX.Element} Painel de gestão de leads.
+ * @returns {JSX.Element} Painel com barra de ferramentas e listagem iterativa de leads.
  */
 export default function Leads() {
-    /** @type {Function} Hook de navegação para aceder aos detalhes da lead. */
     const navigate = useNavigate();
-    /** @type {string|null} Token de autenticação ativo. */
     const token = tokenStore((state) => state.token);
-    const location = useLocation(); // <- Apanha o estado vindo do navigate do Dashboard
-    // --- ESTADO DA STORE DE LEADS ---
-    const { leads, fetchLeads, addLead, updateLead, loading, totalPages } = useLeadStore();
-    /** * Hook personalizado para gerir a lógica do modal de formulário (criação/edição).
-     * @type {Object}
-     */
-    const modalProps = useFormModal(addLead, updateLead, token);
-    const { t, i18n } = useTranslation();
+    const location = useLocation();
 
-    // Se o Dashboard enviou um 'filtroInicial', usamos logo esse valor!
-    // (Transformamos em String para bater certo com os values do teu <select>)
+    const { leads, fetchLeads, addLead, updateLead, loading, totalPages } = useLeadStore();
+
+    const modalProps = useFormModal(addLead, updateLead, token);
+    const { t } = useTranslation();
+
     const [filtro, setFiltro] = useState(
         location.state?.filtroInicial !== undefined ? String(location.state.filtroInicial) : ""
     );
@@ -45,7 +40,6 @@ export default function Leads() {
     const isAdmin = currentUser?.admin;
     const [searchTerm, setSearchTerm] = useState("");
 
-    // --- NOVOS ESTADOS PARA O HISTÓRICO ---
     const [showHistory, setShowHistory] = useState(false);
     const [searchHistory, setSearchHistory] = useState(() => {
         const saved = localStorage.getItem('leadSearchHistory');
@@ -58,26 +52,23 @@ export default function Leads() {
     useEffect(() => {
         if (!token) return;
 
-        // Cria um temporizador que espera 500ms depois da última letra digitada
         const delayDebounceFn = setTimeout(() => {
             fetchLeads(token, filtro, searchTerm, page);
         }, 500);
 
-        // Se o utilizador escrever outra letra antes dos 500ms, limpa o temporizador antigo!
         return () => clearTimeout(delayDebounceFn);
 
-    }, [searchTerm, filtro, page, token, fetchLeads]); // O React reage sempre que o searchTerm muda!
+    }, [searchTerm, filtro, page, token, fetchLeads]);
 
-    // Adicionar ao Leads.jsx e Client.jsx
     useEffect(() => {
         setPage(1);
-    }, [searchTerm, filtro]); // No Client.jsx use apenas [searchTerm]
+    }, [searchTerm, filtro]);
+
     /**
-     * Formata datas provenientes do backend.
-     * Suporta o formato de array [ano, mes, dia] comum em respostas JSON de Java/Hibernate.
      * @function formatarData
-     * @param {Array|string|Date} data - A data a ser formatada.
-     * @returns {string} Data formatada no padrão PT-PT (DD/MM/AAAA).
+     * @description Formata dados temporais provenientes do backend (array numérico ou ISO) para o padrão visual DD/MM/AAAA.
+     * @param {Array|string|Date} data - O valor de data a processar.
+     * @returns {string} String formatada da data.
      */
     const formatarData = (data) => {
         if (!data) return "---";
@@ -88,7 +79,10 @@ export default function Leads() {
         return new Date(data).toLocaleDateString('pt-PT');
     };
 
-    // --- FUNÇÕES DO HISTÓRICO ---
+    /**
+     * Adiciona uma nova entrada de pesquisa ao histórico local e atualiza o estado, limitando a 5 entradas.
+     * @param {string} term - O termo escrito pelo utilizador na caixa de pesquisa.
+     */
     const handleSaveSearch = (term) => {
         if (!term.trim()) return;
         const newHistory = [term, ...searchHistory.filter(h => h !== term)].slice(0, 5);
@@ -96,6 +90,9 @@ export default function Leads() {
         localStorage.setItem('leadSearchHistory', JSON.stringify(newHistory));
     };
 
+    /**
+     * Esvazia o histórico recente de pesquisas do utilizador nesta secção.
+     */
     const clearHistory = () => {
         setSearchHistory([]);
         localStorage.removeItem('leadSearchHistory');
@@ -105,14 +102,12 @@ export default function Leads() {
         <div className="admin-container">
             <div className="barra-container">
                 <h2>{t('leads.title')}</h2>
-                {/* Abre o modal configurado para criação de um novo registo */}
                 <button type="button" className="btn-save" onClick={() => modalProps.abrirParaCriar({ titulo: '', descricao: '', estado: 0 })}>
                     <i className="fa-solid fa-plus"></i> {t('leads.add')}
                 </button>
             </div>
 
             <div className="filtros" style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
-                {/* ZONA DE PESQUISA COM HISTÓRICO */}
                 <div style={{ position: 'relative', flex: 1, minWidth: '250px', maxWidth: '400px' }}>
                     <i className="fa-solid fa-magnifying-glass" style={{ position: 'absolute', left: '12px', top: '12px', color: '#94a3b8' }}></i>
                     <input
@@ -131,7 +126,6 @@ export default function Leads() {
                         style={{ width: '100%', padding: '10px 10px 10px 35px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '15px', outline: 'none' }}
                     />
 
-                    {/* CAIXA SUSPENSA (DROPDOWN) DO HISTÓRICO */}
                     {showHistory && searchHistory.length > 0 && (
                         <div style={{
                             position: 'absolute', top: '100%', left: 0, right: 0,
@@ -150,7 +144,7 @@ export default function Leads() {
                                          setSearchTerm(item);
                                          handleSaveSearch(item);
                                          setShowHistory(false);
-                                         fetchLeads(token, filtro, item); // Passamos o filtro atual também!
+                                         fetchLeads(token, filtro, item);
                                      }}
                                      style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px' }}
                                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
@@ -169,7 +163,7 @@ export default function Leads() {
                         value={filtro}
                         onChange={(e) => {
                             setFiltro(e.target.value);
-                            fetchLeads(token, e.target.value, searchTerm); // Pesquisa logo ao mudar o dropdown!
+                            fetchLeads(token, e.target.value, searchTerm);
                         }}
                         style={{ padding: '8px', marginLeft: '10px', borderRadius: '5px' }}
                     >
@@ -181,13 +175,11 @@ export default function Leads() {
                 </div>
             </div>
 
-            {/* Exibição condicional: Spinner de carregamento ou lista de dados */}
             {loading ? (
                 <div className="loading-state"><p>{t('leads.carregar')}</p></div>
             ) : (
                 <div className="data-list">
                     {leads.map((lead) => {
-                        // Usamos String() para garantir que 0 e "0" são considerados iguais
                         const opcaoEstado = STATUS_OPTIONS.find(opt => String(opt.id) === String(lead.estado));
 
                         return (
@@ -201,7 +193,6 @@ export default function Leads() {
                                             </h4>
                                             <span className="data-date">{formatarData(lead.dataCriacao)}</span>
                                         </div>
-                                        {/* SE FOR ADMIN, MOSTRA O DONO DA LEAD */}
                                         {isAdmin && (
                                             <div style={{ textAlign: 'right' }}>
                                                 <span style={{ fontSize: '12px', color: '#3498db', fontWeight: 'bold' }}>
@@ -210,7 +201,6 @@ export default function Leads() {
                                             </div>
                                         )}
                                     </div>
-                                    {/* Badge dinâmica baseada no estado da lead */}
                                     <span className={`badge status-${lead.estado}`}>
                                         {opcaoEstado ? t(opcaoEstado.key) : "---"}
                                     </span>
@@ -221,7 +211,6 @@ export default function Leads() {
                 </div>
             )}
 
-            {/* Componente de Modal reutilizável para operações de Lead */}
             <FormModal
                 isOpen={modalProps.modalAberto}
                 type="lead"

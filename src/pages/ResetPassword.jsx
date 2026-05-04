@@ -1,11 +1,24 @@
+/**
+ * @file ResetPassword.jsx
+ * @description Componente de página para redefinição de palavra-passe.
+ * Utiliza um token de recuperação enviado por email para validar a alteração.
+ */
+
 import { useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { UserService } from '../services/api';
 import '../styles/loginRegister.css';
 import {useTranslation} from "react-i18next";
 
+/**
+ * Componente funcional para renderizar o formulário de nova palavra-passe.
+ *
+ * @component
+ * @returns {JSX.Element} Formulário para inserção e confirmação da nova password.
+ */
 export default function ResetPassword() {
     const [searchParams] = useSearchParams();
+    /** @type {string|null} Token de recuperação extraído da URL. */
     const token = searchParams.get("token");
     const navigate = useNavigate();
 
@@ -14,8 +27,13 @@ export default function ResetPassword() {
     const [erro, setErro] = useState('');
     const [sucesso, setSucesso] = useState('');
 
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
 
+    /**
+     * Valida os inputs e submete a nova password à API.
+     * @async
+     * @param {React.FormEvent} e - Evento de submissão do formulário.
+     */
     const handleSubmeter = async (e) => {
         e.preventDefault();
         setErro('');

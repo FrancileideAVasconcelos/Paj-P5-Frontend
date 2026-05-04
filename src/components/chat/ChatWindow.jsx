@@ -1,5 +1,27 @@
+/**
+ * @file ChatWindow.jsx
+ * @description Componente de interface principal do Chat.
+ * Renderiza o histórico de mensagens trocadas com o utilizador selecionado, trata da
+ * formatação robusta de datas e exibe o formulário de envio de novas mensagens.
+ */
+
 import { useTranslation } from "react-i18next";
 
+/**
+ * Componente funcional que gere a vista de leitura e escrita do chat.
+ *
+ * @component
+ * @param {Object} props - Propriedades passadas ao componente.
+ * @param {Object|null} props.chatAtivo - Objeto representando o contacto do chat aberto atualmente.
+ * @param {Array} props.mensagens - Lista de mensagens pertencentes ao chat em visualização.
+ * @param {string} props.novaMensagem - Estado controlado do texto atualmente no input de mensagem.
+ * @param {Function} props.setNovaMensagem - Função para atualizar o estado da novaMensagem.
+ * @param {Function} props.onEnviar - Função invocada na submissão do formulário de chat.
+ * @param {Function} props.onVoltar - Função invocada no botão "voltar" (exclusivo mobile).
+ * @param {boolean} props.isMobileHidden - Booleano para ocultar a janela se nenhum chat estiver ativo no mobile.
+ * @param {React.MutableRefObject} props.mensagensFimRef - Referência DOM usada para forçar o scroll automático para a última mensagem.
+ * @returns {JSX.Element} A interface principal de chat ou o "empty state" de seleção.
+ */
 export default function ChatWindow({
                                        chatAtivo,
                                        mensagens,
@@ -12,7 +34,12 @@ export default function ChatWindow({
                                    }) {
     const { t } = useTranslation();
 
-    // A nossa função inteligente das datas vem para aqui!
+    /**
+     * Converte datas recebidas (arrays ISO ou Strings) num formato legível para o Chat (HH:MM).
+     * @function getHoraFormatada
+     * @param {Array|string} data - A estrutura da data proveniente do backend.
+     * @returns {string} String com a hora formatada.
+     */
     const getHoraFormatada = (data) => {
         if (!data) return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         try {

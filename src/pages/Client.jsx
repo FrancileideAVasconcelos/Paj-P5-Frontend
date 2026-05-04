@@ -1,12 +1,12 @@
 /**
  * @file Client.jsx
  * @description Componente de página para a gestão de Clientes do utilizador.
- * Permite listar todos os clientes associados, iniciar o fluxo de criação de novos clientes
- * através de um modal e navegar para a visualização detalhada de cada registo.
+ * Permite listar todos os clientes associados, pesquisar, adicionar através de um modal
+ * e navegar para a visualização detalhada de cada registo.
  */
 
 import {useEffect, useState} from 'react';
-import useUserStore from '../store/useUserStore.js'; // Adiciona isto
+import useUserStore from '../store/useUserStore.js';
 import { useNavigate } from "react-router-dom";
 import tokenStore from "../store/tokenStore.js";
 import useClientStore from "../store/useClientStore.js";
@@ -17,33 +17,24 @@ import {useTranslation} from "react-i18next";
 import Pagination from "../components/Pagination.jsx";
 
 /**
- * Componente funcional que renderiza a interface de gestão de clientes.
+ * Componente funcional que renderiza a interface principal de gestão de clientes.
+ *
  * @component
- * @returns {JSX.Element} Painel administrativo de clientes com lista e ações.
+ * @returns {JSX.Element} Painel administrativo de clientes com listagem, paginação e ações.
  */
 export default function Client(){
-    /** @type {Function} Hook para navegação programática (ex: aceder a /clients/:id). */
     const navigate = useNavigate();
-
-    /** @type {string|null} Token de autenticação para autorizar as chamadas à API. */
     const token = tokenStore((state) => state.token);
 
-    // --- ESTADOS DA STORE DE CLIENTES ---
-    /** @type {Object} Dados e funções de ação da store de clientes. */
     const { clients, addClient, fetchClient, updateClient, loading, totalPages } = useClientStore();
-    /** * Hook personalizado para gerir o estado e as funções do modal de formulário.
-     * Facilita a reutilização da lógica de abertura, fecho e salvamento.
-     * @type {Object}
-     */
-    const modalProps = useFormModal(addClient, updateClient, token);
 
+    const modalProps = useFormModal(addClient, updateClient, token);
     const { t, i18n } = useTranslation();
 
     const currentUser = useUserStore((state) => state.currentUser);
     const isAdmin = currentUser?.admin;
     const [searchTerm, setSearchTerm] = useState("");
 
-    // --- NOVOS ESTADOS PARA O HISTÓRICO ---
     const [showHistory, setShowHistory] = useState(false);
     const [searchHistory, setSearchHistory] = useState(() => {
         const saved = localStorage.getItem('clientSearchHistory');
@@ -68,7 +59,10 @@ export default function Client(){
         setPage(1);
     }, [searchTerm]);
 
-    // --- FUNÇÕES DO HISTÓRICO ---
+    /**
+     * Guarda o termo de pesquisa no histórico local do navegador para futuras sugestões.
+     * @param {string} term - Termo pesquisado.
+     */
     const handleSaveSearch = (term) => {
         if (!term.trim()) return;
         const newHistory = [term, ...searchHistory.filter(h => h !== term)].slice(0, 5);
@@ -76,6 +70,9 @@ export default function Client(){
         localStorage.setItem('clientSearchHistory', JSON.stringify(newHistory));
     };
 
+    /**
+     * Limpa o histórico de pesquisa de clientes do LocalStorage.
+     */
     const clearHistory = () => {
         setSearchHistory([]);
         localStorage.removeItem('clientSearchHistory');
@@ -83,7 +80,6 @@ export default function Client(){
 
     return (
         <div className="admin-container">
-            {/* Cabeçalho da página com título e ação de criação */}
             <div className="barra-container">
                 <h2>{t('clients.title')}</h2>
                 <button
@@ -147,12 +143,10 @@ export default function Client(){
                 </div>
             </div>
 
-            {/* Renderização condicional: Exibe feedback de carregamento ou a lista de clientes */}
             {loading ? (
                 <div className="loading-state"><p>{t('clients.carregar')}</p></div>
             ) : (
                 <div className="data-list">
-                    {/* Mapeia o array de clientes para gerar os itens clicáveis da lista */}
                     {clients.map((client) => (
                         <div key={client.id} className="data-item" onClick={() => navigate(`/clients/${client.id}`)}>
                             <div className="data-info">
@@ -161,7 +155,6 @@ export default function Client(){
                                         {client.nome}
                                         {!client.ativo && <span style={{ backgroundColor: '#e74c3c', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', marginLeft: '10px', verticalAlign: 'middle' }}>{t('admin_user_details.lista.inativo')}</span>}
                                     </h4>
-                                    {/* SE FOR ADMIN, MOSTRA O DONO */}
                                     {isAdmin && (
                                         <span style={{ fontSize: '12px', color: '#3498db', fontWeight: 'bold' }}>
                                             {t('geral.dono')} @{client.dono}
@@ -175,7 +168,6 @@ export default function Client(){
                 </div>
             )}
 
-            {/* Modal de formulário unificado para criação e edição de clientes */}
             <FormModal
                 isOpen={modalProps.modalAberto}
                 type="client"

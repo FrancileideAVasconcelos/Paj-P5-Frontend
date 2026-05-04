@@ -1,3 +1,9 @@
+/**
+ * @file Chat.jsx
+ * @description Componente de página mestre do módulo de Mensagens/Chat em tempo real.
+ * Gere a ligação WebSocket global para o chat, o estado do contacto ativo e a sincronização do histórico.
+ */
+
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChatService } from '../services/api';
@@ -6,6 +12,12 @@ import { useTranslation } from "react-i18next";
 import ChatSidebar from '../components/chat/ChatSidebar.jsx';
 import ChatWindow from '../components/chat/ChatWindow.jsx';
 
+/**
+ * Componente funcional que engloba a barra lateral de contactos e a janela de conversação.
+ *
+ * @component
+ * @returns {JSX.Element} A interface completa do módulo de Chat.
+ */
 export default function Chat() {
     const navigate = useNavigate();
     const { t } = useTranslation();
@@ -28,7 +40,6 @@ export default function Chat() {
 
     // --- CARREGAMENTO INICIAL E WEBSOCKET ---
     useEffect(() => {
-        // 1. Carrega os utilizadores já ordenados pelo Java
         ChatService.getContactos()
             .then(res => setUtilizadores(res))
             .catch(console.error);
@@ -36,7 +47,6 @@ export default function Chat() {
         const token = localStorage.getItem('token');
         let pingInterval;
 
-        // 2. Se houver token, liga o WebSocket
         if (token) {
             const socket = new WebSocket(ChatService.getWebSocketUrl(token));
             ws.current = socket;
@@ -60,21 +70,17 @@ export default function Chat() {
                     const chatAtual = chatAtivoRef.current;
 
                     if (chatAtual && chatAtual.username === novaMsg.remetenteUsername) {
-                        // O chat está ABERTO com esta pessoa
                         setMensagens((prev) => {
                             const msgFinal = { ...novaMsg, id: novaMsg.id || Date.now() };
                             if (prev.some(m => m.id === msgFinal.id)) return prev;
                             return [...prev, msgFinal];
                         });
 
-                        // Marca como lidas e DEPOIS pede ao Java a lista de contactos fresca
                         ChatService.marcarComoLidas(chatAtual.username)
                             .then(() => ChatService.getContactos())
                             .then(res => setUtilizadores(res))
                             .catch(console.error);
                     } else {
-                        // 🚀 A MAGIA: O chat NÃO está aberto. Pedimos ao Java a lista fresca!
-                        // Ela já vem ordenada e com os números exatos e não duplicados.
                         ChatService.getContactos()
                             .then(res => setUtilizadores(res))
                             .catch(console.error);
@@ -102,7 +108,6 @@ export default function Chat() {
             };
         }
 
-        // 3. Função de Limpeza
         return () => {
             if (pingInterval) clearInterval(pingInterval);
 
@@ -166,7 +171,11 @@ export default function Chat() {
         mensagensFimRef.current?.scrollIntoView({ behavior: 'auto' });
     }, [mensagens]);
 
-    // --- AÇÕES DO CHAT ---
+    /**
+     * Gere o envio de uma nova mensagem via HTTP e atualiza o estado local otimisticamente.
+     * @async
+     * @param {React.FormEvent} e - O evento de submissão do formulário.
+     */
     const handleEnviar = async (e) => {
         e.preventDefault();
         if (!novaMensagem.trim() || !chatAtivo) return;
@@ -190,7 +199,6 @@ export default function Chat() {
                 return [...prev, msgFinal];
             });
 
-            // 🚀 Atualizar a lista diretamente do Java após enviar!
             ChatService.getContactos()
                 .then(res => setUtilizadores(res))
                 .catch(console.error);
@@ -200,6 +208,10 @@ export default function Chat() {
         }
     };
 
+    /**
+     * Define o contacto atualmente ativo e esconde a barra lateral em ecrãs mobile.
+     * @param {Object} user - O objeto do utilizador selecionado.
+     */
     const handleSelecionarChat = (user) => {
         setChatAtivo(user);
         setMostrarMensagensMobile(true);
@@ -210,9 +222,12 @@ export default function Chat() {
         );
     };
 
+    /**
+     * Desseleciona o contacto atual, regressando à lista de contactos na vista mobile.
+     */
     const handleVoltarLista = () => {
         setMostrarMensagensMobile(false);
-        setChatAtivo(null); // Esquece a pessoa ao voltar
+        setChatAtivo(null);
     };
 
     return (

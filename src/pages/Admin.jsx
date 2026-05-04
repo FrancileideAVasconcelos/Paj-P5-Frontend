@@ -1,3 +1,10 @@
+/**
+ * @file Admin.jsx
+ * @description Página principal de administração do sistema.
+ * Permite visualizar, pesquisar e gerir todos os utilizadores da plataforma,
+ * bem como enviar convites de registo para novos administradores ou utilizadores.
+ */
+
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import useAdminStore from '../store/useAdminStore.js';
@@ -9,14 +16,18 @@ import '../styles/Admin.css';
 import {useTranslation} from "react-i18next";
 import Pagination from "../components/Pagination.jsx";
 
+/**
+ * Componente funcional que renderiza o painel geral de Administração.
+ *
+ * @component
+ * @returns {JSX.Element} A interface de gestão de utilizadores e envio de convites.
+ */
 export default function Admin() {
     const navigate = useNavigate();
     const token = tokenStore((state) => state.token);
 
-    // Agora também trazemos o totalPages da Store!
     const { users, loading, error, fetchUsers, totalPages } = useAdminStore();
 
-    // Estado para controlar a página em que estamos no React
     const [page, setPage] = useState(1);
 
     // --- ESTADOS PARA O CONVITE ---
@@ -29,7 +40,6 @@ export default function Admin() {
     const [searchTerm, setSearchTerm] = useState("");
     const [showHistory, setShowHistory] = useState(false);
     const [searchHistory, setSearchHistory] = useState(() => {
-        // Ao carregar a página, vai buscar o histórico guardado no browser
         const saved = localStorage.getItem('adminSearchHistory');
         return saved ? JSON.parse(saved) : [];
     });
@@ -37,18 +47,16 @@ export default function Admin() {
     const { t } = useTranslation();
 
     useEffect(() => {
-        // Se a caixa de pesquisa ficar completamente vazia, recarrega tudo
         if (searchTerm === "") {
             fetchUsers(token, "");
         }
     }, [searchTerm, token, fetchUsers]);
 
-    // 1. Sempre que o utilizador escreve algo na pesquisa, volta para a Página 1
     useEffect(() => {
         setPage(1);
     }, [searchTerm]);
 
-    // 2. O famoso "Debounce" que reage à pesquisa e à mudança de página!
+    // O famoso "Debounce" que reage à pesquisa e à mudança de página!
     useEffect(() => {
         if (!token) {
             navigate('/login');
@@ -57,33 +65,47 @@ export default function Admin() {
 
         const delayDebounceFn = setTimeout(() => {
             fetchUsers(token, searchTerm, page);
-        }, 500); // Espera 500ms
+        }, 500);
 
         return () => clearTimeout(delayDebounceFn);
     }, [searchTerm, page, token, fetchUsers, navigate]);
 
-    // --- FUNÇÕES DO HISTÓRICO ---
+    /**
+     * Guarda um termo de pesquisa no histórico local (LocalStorage), mantendo um máximo de 5 itens.
+     * @param {string} term - O termo pesquisado a guardar.
+     */
     const handleSaveSearch = (term) => {
         if (!term.trim()) return;
-        // Guarda apenas os últimos 5 itens e remove duplicados
         const newHistory = [term, ...searchHistory.filter(h => h !== term)].slice(0, 5);
         setSearchHistory(newHistory);
         localStorage.setItem('adminSearchHistory', JSON.stringify(newHistory));
     };
 
+    /**
+     * Interceta a tecla Enter no input de pesquisa para forçar a filtragem imediata.
+     * @param {React.KeyboardEvent} e - Evento de teclado.
+     */
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             handleSaveSearch(searchTerm);
             setShowHistory(false);
-            fetchUsers(token, searchTerm); // A MAGIA: Pede ao Java para filtrar!
+            fetchUsers(token, searchTerm);
         }
     };
 
+    /**
+     * Limpa o histórico de pesquisa atual guardado no LocalStorage.
+     */
     const clearHistory = () => {
         setSearchHistory([]);
         localStorage.removeItem('adminSearchHistory');
     };
 
+    /**
+     * Processa a submissão do formulário de convite de novos utilizadores.
+     * @async
+     * @param {React.FormEvent} e - Evento de submissão do formulário.
+     */
     const handleConvidar = async (e) => {
         e.preventDefault();
         setLoadingInvite(true);
@@ -93,7 +115,6 @@ export default function Admin() {
             await AdminService.inviteUser(inviteEmail);
             setInviteMsg({ texto: t('admin.inviteMsg'), tipo: 'sucesso' });
             setInviteEmail('');
-            // Fechar o modal após 2 segundos se tiver sucesso
             setTimeout(() => {
                 setIsInviteModalOpen(false);
                 setInviteMsg({ texto: '', tipo: '' });
@@ -112,7 +133,6 @@ export default function Admin() {
             <div className="admin-header-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <h2 className="admin-title" style={{ margin: 0 }}>{t('admin.title')}</h2>
 
-                {/* BOTÃO PARA ABRIR O MODAL DE CONVITE */}
                 <button
                     className="btn-save"
                     onClick={() => setIsInviteModalOpen(true)}
@@ -165,13 +185,12 @@ export default function Admin() {
                             {searchHistory.map((item, idx) => (
                                 <div
                                     key={idx}
-                                    // Usamos onMouseDown em vez de onClick para evitar que o onBlur do input feche a caixa antes do clique registar
                                     onMouseDown={(e) => {
                                         e.preventDefault();
                                         setSearchTerm(item);
                                         handleSaveSearch(item);
                                         setShowHistory(false);
-                                        fetchUsers(token, item); // A MAGIA AQUI TAMBÉM!
+                                        fetchUsers(token, item);
                                     }}
                                     style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px' }}
                                     onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}

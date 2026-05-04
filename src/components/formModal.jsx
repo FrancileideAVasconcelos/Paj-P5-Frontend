@@ -1,8 +1,26 @@
+/**
+ * @file formModal.jsx
+ * @description Componente de interface (Modal) reutilizável para a criação e edição de entidades.
+ * Adapta dinamicamente o formulário apresentado consoante o tipo de dados ('client' ou 'lead').
+ */
+
 import {useState, useEffect} from 'react';
 import {STATUS_OPTIONS} from "../utils/constants.js";
 import '../styles/ClientLead.css';
 import {useTranslation} from "react-i18next";
 
+/**
+ * Componente funcional que apresenta um modal sobreposto com um formulário contextual.
+ *
+ * @component
+ * @param {Object} props - Propriedades passadas ao componente.
+ * @param {boolean} props.isOpen - Define se o modal está atualmente visível no ecrã.
+ * @param {string} props.type - Tipo de entidade a gerir ('client' ou 'lead'). Determina os campos renderizados.
+ * @param {Object} props.initialData - Dados pré-existentes para preencher o formulário (em modo de edição).
+ * @param {Function} props.onClose - Função callback invocada para fechar o modal sem submeter dados.
+ * @param {Function} props.onSave - Função callback invocada na submissão do formulário com os novos dados.
+ * @returns {JSX.Element|null} O modal renderizado, ou null caso isOpen seja falso.
+ */
 export default function FormModal({isOpen, type, initialData, onClose, onSave}) {
     const [formData, setFormData] = useState(null);
     const { t } = useTranslation();
@@ -23,6 +41,10 @@ export default function FormModal({isOpen, type, initialData, onClose, onSave}) 
         ? (isEdit ? 'form_modal.editar_client' : 'form_modal.adicionar_client')
         : (isEdit ? 'form_modal.editar_lead' : 'form_modal.adicionar_lead');
 
+    /**
+     * Interceta a submissão nativa do formulário e passa os dados para a função onSave.
+     * @param {React.FormEvent} e - Evento de submissão.
+     */
     const handleSubmit = (e) => {
         e.preventDefault(); // O navegador só chega aqui se os balõezinhos todos passarem na validação!
         onSave(formData);

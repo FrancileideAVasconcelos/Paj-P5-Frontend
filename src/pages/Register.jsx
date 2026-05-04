@@ -1,14 +1,28 @@
+/**
+ * @file Register.jsx
+ * @description Componente de página para conclusão do registo de novos utilizadores.
+ * Acessível exclusivamente através de um token de convite gerado pelo administrador.
+ */
+
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { UserService } from '../services/api';
 import '../styles/loginRegister.css';
 import {useTranslation} from "react-i18next";
 
+/**
+ * Componente funcional que renderiza o formulário de registo.
+ *
+ * @component
+ * @returns {JSX.Element} A interface de criação de conta ou mensagem de erro se o token for inválido.
+ */
 export default function Register() {
     const [searchParams] = useSearchParams();
-    const token = searchParams.get("token"); // Lê o token do URL enviado por email
+    /** @type {string|null} Token de validação extraído da URL. */
+    const token = searchParams.get("token");
     const navigate = useNavigate();
 
+    /** @type {Object} Estado local contendo os dados do formulário de registo. */
     const [formData, setFormData] = useState({
         username: '',
         password: '',
@@ -17,11 +31,12 @@ export default function Register() {
         telefone: '',
         fotoUrl: ''
     });
+
     const [erro, setErro] = useState('');
     const [sucesso, setSucesso] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
 
     // SE NÃO HOUVER TOKEN: Bloqueia a página de registo!
     if (!token) {
@@ -30,17 +45,27 @@ export default function Register() {
                 <div className="login-container" style={{ textAlign: 'center' }}>
                     <h2>{t('registo.aviso')}</h2>
                     <p style={{ color: '#e74c3c', fontWeight: 'bold', margin: '20px 0' }}>
-                        {t('registo.info')}                    </p>
+                        {t('registo.info')}
+                    </p>
                     <Link to="/login" className="btn-auth">{t('registo.redirecionamento')}</Link>
                 </div>
             </div>
         );
     }
 
+    /**
+     * Atualiza o estado do formulário dinamicamente com base no input alterado.
+     * @param {React.ChangeEvent<HTMLInputElement>} e - Evento de input.
+     */
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    /**
+     * Submete os dados de registo à API para validação e criação da conta.
+     * @async
+     * @param {React.FormEvent} e - Evento de submissão do formulário.
+     */
     const handleSubmeter = async (e) => {
         e.preventDefault();
         setErro('');
@@ -70,7 +95,6 @@ export default function Register() {
                 {sucesso && <p style={{ color: '#27ae60', textAlign: 'center', fontWeight: 'bold' }}>{sucesso}</p>}
 
                 <form onSubmit={handleSubmeter} className="custom-form">
-
                     <div className="form-group">
                         <label>{t('geral.username')}</label>
                         <input type="text" name="username" value={formData.username} onChange={handleChange} required />

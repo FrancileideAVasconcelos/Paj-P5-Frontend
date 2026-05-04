@@ -1,3 +1,9 @@
+/**
+ * @file index.js
+ * @description Configuração principal da internacionalização (i18n) da aplicação React.
+ * Inicializa o i18next com os idiomas suportados (Português e Inglês) e define o idioma de fallback.
+ */
+
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import pt from './pt.js';

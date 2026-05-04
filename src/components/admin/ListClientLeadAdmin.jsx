@@ -1,9 +1,30 @@
+/**
+ * @file ListClientLeadAdmin.jsx
+ * @description Componente reutilizável para exibir cartões de resumo e gráficos de Clientes ou Leads.
+ * Utilizado no painel de detalhes do administrador para gerir dados de utilizadores específicos em lote.
+ */
+
 import '../../styles/Admin.css'
 import React, { useMemo } from 'react';
 import { useTranslation } from "react-i18next";
 import { STATUS_OPTIONS } from "../../utils/constants.js";
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 
+/**
+ * Componente funcional que renderiza um cartão de dados com métricas e ações em lote.
+ *
+ * @component
+ * @param {Object} props - Propriedades passadas ao componente.
+ * @param {string} props.title - Título do cartão (ex: "Clientes" ou "Leads").
+ * @param {string} props.type - Tipo de dados a processar ('client' ou 'lead').
+ * @param {Array} props.data - Lista de registos a apresentar/analisar.
+ * @param {string} [props.cardClass] - Classe CSS opcional para personalização do cartão.
+ * @param {JSX.Element} [props.filterElement] - Elemento JSX opcional para filtragem (ex: Select).
+ * @param {Function} props.onReactivateAll - Função disparada ao clicar no botão de reativar tudo.
+ * @param {Function} props.onInactivateAll - Função disparada ao clicar no botão de inativar tudo.
+ * @param {Function} props.onDeleteAll - Função disparada ao clicar no botão de apagar tudo.
+ * @returns {JSX.Element} Cartão contendo um resumo numérico (para clientes) ou gráfico circular (para leads).
+ */
 export default function ListClientLeadAdmin({
                                                 title, type, data, cardClass, filterElement,
                                                 onReactivateAll, onInactivateAll, onDeleteAll
@@ -11,7 +32,11 @@ export default function ListClientLeadAdmin({
 
     const { t } = useTranslation();
 
-    // Lógica para agrupar as Leads por estado (Só corre se o type for 'lead')
+    /**
+     * @type {Array}
+     * @description Lógica para agrupar as Leads por estado e preparar a estrutura de dados para o Recharts.
+     * Só é executada se o tipo de cartão for 'lead' e se existirem dados.
+     */
     const leadsAgrupadas = useMemo(() => {
         if (type !== 'lead' || !data || data.length === 0) return [];
 
@@ -28,10 +53,9 @@ export default function ListClientLeadAdmin({
         })).filter(item => item.value > 0);
     }, [data, type, t]);
 
-
     return (
         <div className={`data-card ${cardClass || ''}`}>
-            {/* CABEÇALHO DO CARTÃO: Título, filtro e ações em lote (MANTIDO!) */}
+            {/* CABEÇALHO DO CARTÃO: Título, filtro e ações em lote */}
             <div className="data-card-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <h3>{title} ({data?.length || 0})</h3>
@@ -66,9 +90,8 @@ export default function ListClientLeadAdmin({
                                 </span>
                             </div>
                         ) : (
-                            /* SE FOR LEAD: Mostra o Gráfico Circular que criámos */
+                            /* SE FOR LEAD: Mostra o Gráfico Circular */
                             <div style={{ width: '100%', minHeight: '250px', display: 'flex', justifyContent: 'center' }}>
-                                {/* Ao colocarmos 'height={250}' diretamente e um minHeight no pai, a biblioteca já não quebra! */}
                                 <ResponsiveContainer width="100%" height={250}>
                                     <PieChart>
                                         <Pie

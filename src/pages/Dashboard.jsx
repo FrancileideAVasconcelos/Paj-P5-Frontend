@@ -1,3 +1,9 @@
+/**
+ * @file Dashboard.jsx
+ * @description Componente da página principal de visualização estática (Dashboard) após login.
+ * Carrega e exibe métricas-chave do sistema através de gráficos interativos e cartões de resumo numérico.
+ */
+
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import tokenStore from "../store/tokenStore.js";
@@ -12,6 +18,12 @@ import {
     PieChart, Pie, Legend, ResponsiveContainer
 } from 'recharts';
 
+/**
+ * Componente funcional que renderiza os gráficos estatísticos baseados nos dados do utilizador (ou globais para Admins).
+ *
+ * @component
+ * @returns {JSX.Element} Interface do Dashboard.
+ */
 export default function Dashboard() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -51,16 +63,17 @@ export default function Dashboard() {
 
     const isAdmin = currentUser?.admin === true;
 
-    // --- FORMATAÇÃO DOS DADOS PARA OS GRÁFICOS --- //
     const CORES_TARTE = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
 
-    // 1. Leads por Estado (Tarte)
-    // 1. Leads por Estado (Tarte)
+    /**
+     * @type {Array}
+     * @description Formata os dados de leads agrupadados por estado fornecidos pelo backend
+     * num formato compatível com o componente Recharts PieChart.
+     */
     const dadosLeadsPorEstado = useMemo(() => {
         if (!stats || !stats.leadsPorEstado) return [];
 
         const resultado = [];
-        // O Java manda um mapa { "0": 10, "1": 5 }, vamos convertê-lo para o que o Recharts precisa
         Object.entries(stats.leadsPorEstado).forEach(([estadoIdStr, quantidade]) => {
             const estadoId = Number(estadoIdStr);
             const nomeEstado = STATUS_OPTIONS[estadoId]
@@ -73,7 +86,11 @@ export default function Dashboard() {
         return resultado;
     }, [stats, t]);
 
-    // 2. Evolução Combinada (Leads + Utilizadores no mesmo gráfico!)
+    /**
+     * @type {Array}
+     * @description Formata os dados de evolução temporal (Leads + Utilizadores) num formato
+     * uniforme que o componente Recharts LineChart aceita para desenhar ambas as linhas numa só grelha.
+     */
     const evolucaoCombinadaData = useMemo(() => {
         if (!stats) return [];
         const mapaDatas = {};
@@ -96,7 +113,10 @@ export default function Dashboard() {
         return Object.values(mapaDatas).sort((a, b) => a.data.localeCompare(b.data));
     }, [stats]);
 
-    // 3. Leads por Utilizador (Top 5 gerado no Backend)
+    /**
+     * @type {Array}
+     * @description Prepara os dados das 5 pessoas com mais Leads para o BarChart (visível apenas para admins).
+     */
     const leadsPorUserData = useMemo(() => {
         if (!stats?.leadsPorUtilizador) return [];
         return Object.entries(stats.leadsPorUtilizador).map(([name, quantidade]) => ({ name, quantidade }));
@@ -118,7 +138,6 @@ export default function Dashboard() {
                     {t('dashboard.title')}
                 </h2>
 
-                {/* --- CARTÕES SUPERIORES --- */}
                 <div className={`stats-grid ${isAdmin ? 'admin-grid' : 'user-grid'}`}>
                     <div className="stat-card clickable" onClick={() => navigate('/leads')}>
                         <div className="stat-icon"><i className="fa-solid fa-bullseye" style={{color: '#0ea5e9'}}></i></div>
@@ -144,10 +163,8 @@ export default function Dashboard() {
                     )}
                 </div>
 
-                {/* --- GRELHA SUPERIOR DE GRÁFICOS (Tarte e Bolinhas ficam lado a lado) --- */}
                 <div className="charts-grid">
 
-                    {/* GRÁFICO 1: Leads por Estado (Tarte) */}
                     <div className="chart-card">
                         <h3><i className="fa-solid fa-chart-pie"></i> {t('dashboard.distribuicao_leads')}</h3>
                         <div className="chart-wrapper" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -165,7 +182,6 @@ export default function Dashboard() {
                                             stroke="none"
                                             style={{ cursor: 'pointer' }}
                                             onClick={(entry) => {
-                                                // entry contém os dados da fatia clicada (incluindo o nosso 'id')
                                                 navigate('/leads', { state: { filtroInicial: entry.id } });
                                             }}
                                         >
@@ -176,7 +192,6 @@ export default function Dashboard() {
                                         <RechartsTooltip borderRadius={8} />
                                     </PieChart>
 
-                                    {/* Legenda manual fora do PieChart */}
                                     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px 16px', paddingTop: '8px' }}>
                                         {dadosLeadsPorEstado.map((entry, index) => (
                                             <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#64748b' }}>
@@ -200,7 +215,6 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* GRÁFICO 2: Leads por Utilizador (BARRAS) - Fica na grelha ao lado da Tarte para Admins */}
                     {isAdmin && (
                         <div className="chart-card">
                             <h3><i className="fa-solid fa-chart-column"></i> {t('dashboard.leads_user')}</h3>
@@ -219,10 +233,8 @@ export default function Dashboard() {
                     )}
                 </div>
 
-                {/* --- GRÁFICO INFERIOR DE LARGURA TOTAL (Evolução Temporal) --- */}
                 <div className="chart-card" style={{ marginTop: '20px' }}>
                     <h3><i className="fa-solid fa-chart-line"></i>{t('dashboard.evolucao_temporal')}</h3>
-                    {/* A altura é definida aqui, e o ResponsiveContainer preenche 100% */}
                     <div className="chart-wrapper" style={{ width: '100%', height: '350px' }}>
                         {evolucaoCombinadaData.length > 0 ? (
                             <ResponsiveContainer width="100%" height={chartHeight}>

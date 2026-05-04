@@ -1,9 +1,26 @@
-
+/**
+ * @file useAdminStore.js
+ * @description Store do Zustand para operações exclusivas do painel de administração.
+ * Gere o estado dos utilizadores do sistema, bem como a manipulação de dados de terceiros.
+ */
 
 import { create } from 'zustand';
 import { AdminService } from "../services/api.js";
 import i18n from "i18next";
 
+/**
+ * @typedef {Object} AdminStore
+ * @property {Array} users - Lista de todos os utilizadores carregados.
+ * @property {boolean} loading - Indicador de estado de carregamento de listas principais.
+ * @property {string|null} error - Mensagem de erro atual, caso exista.
+ * @property {Array} userClients - Clientes pertencentes a um utilizador sob inspeção.
+ * @property {Array} userLeads - Leads pertencentes a um utilizador sob inspeção.
+ * @property {boolean} loadingDetails - Indicador de carregamento dos detalhes do utilizador selecionado.
+ * @property {number} currentPage - Página atual da lista de utilizadores.
+ * @property {number} totalPages - Total de páginas disponíveis de utilizadores.
+ *
+ * E os respetivos métodos de fetch e manipulação.
+ */
 const useAdminStore = create((set, get) => ({
 
     users: [],
@@ -14,19 +31,17 @@ const useAdminStore = create((set, get) => ({
     userLeads: [],
     loadingDetails: false,
 
-    // --- NOVAS VARIÁVEIS DE PAGINAÇÃO ---
     currentPage: 1,
     totalPages: 1,
 
-    // --- FUNÇÕES DA LISTA GERAL ---
     fetchUsers: async (token, search = '', page = 1) => {
         set({ loading: true, error: null });
         try {
             const response = await AdminService.getAllUsers(search, page);
             set({
-                users: response.data || [],           // Extrai a lista de dentro do envelope!
-                currentPage: response.currentPage || 1, // Guarda a página atual
-                totalPages: response.totalPages || 1,   // Guarda o total de páginas
+                users: response.data || [],
+                currentPage: response.currentPage || 1,
+                totalPages: response.totalPages || 1,
                 loading: false
             });
         } catch (error) {
@@ -38,7 +53,6 @@ const useAdminStore = create((set, get) => ({
         try {
             await AdminService.editUser(username, userData);
             set((state) => ({
-                // Atualiza os dados na lista de utilizadores em memória
                 users: state.users.map(u => u.username === username ? { ...u, ...userData } : u)
             }));
             return true;
@@ -51,13 +65,11 @@ const useAdminStore = create((set, get) => ({
     deleteUser: async (token, username, permanente = false) => {
         try {
             await AdminService.deleteUser(username, permanente);
-
             set((state) => ({
                 users: permanente
                     ? state.users.filter(u => u.username !== username)
                     : state.users.map(u => u.username === username ? { ...u, ativo: false } : u)
             }));
-
             return true;
         } catch (error) {
             return false;
@@ -67,18 +79,14 @@ const useAdminStore = create((set, get) => ({
     reactivateUser: async (token, username) => {
         try {
             await AdminService.reactivateUser(username);
-
             set((state) => ({
                 users: state.users.map(u => u.username === username ? { ...u, ativo: true } : u)
             }));
-
             return true;
         } catch (error) {
             return false;
         }
     },
-
-    // --- FUNÇÕES DOS DETALHES ---
 
     fetchUserDetails: async (token, username) => {
         set({ loadingDetails: true, error: null });
@@ -104,8 +112,6 @@ const useAdminStore = create((set, get) => ({
     },
 
     clearUserDetails: () => set({ userClients: [], userLeads: [], error: null }),
-
-    // --- FUNÇÕES DE EDIÇÃO ADMINISTRATIVA ---
 
     editClientAdmin: async (token, username, id, clientData) => {
         try {
@@ -133,14 +139,9 @@ const useAdminStore = create((set, get) => ({
         }
     },
 
-    // ==========================================
-    // FUNÇÕES UNIFICADAS (CLIENTES & LEADS)
-    // ==========================================
-
     toggleItemStatus: async (token, username, type, id, isAtivo) => {
         try {
             await AdminService.toggleItemStatus(type, id, isAtivo);
-
             set((state) => {
                 const listName = type === 'client' ? 'userClients' : 'userLeads';
                 return {
@@ -155,7 +156,6 @@ const useAdminStore = create((set, get) => ({
     deleteItemPermanent: async (token, username, type, id) => {
         try {
             await AdminService.deleteItemPermanent(type, id);
-
             set((state) => {
                 const listName = type === 'client' ? 'userClients' : 'userLeads';
                 return {
@@ -170,7 +170,6 @@ const useAdminStore = create((set, get) => ({
     toggleAllItemsStatus: async (token, username, type, inativar) => {
         try {
             await AdminService.toggleAllItemsStatus(username, type, inativar);
-
             set((state) => {
                 const listName = type === 'client' ? 'userClients' : 'userLeads';
                 return {
@@ -185,7 +184,6 @@ const useAdminStore = create((set, get) => ({
     deleteAllItemsPermanent: async (token, username, type) => {
         try {
             await AdminService.deleteAllItemsPermanent(username, type);
-
             set((state) => {
                 const listName = type === 'client' ? 'userClients' : 'userLeads';
                 return {
@@ -196,7 +194,6 @@ const useAdminStore = create((set, get) => ({
             console.error(`${i18n.t('console_logs.erro_apagar')} ${type}s:`, error);
         }
     }
-
 }));
 
 export default useAdminStore;

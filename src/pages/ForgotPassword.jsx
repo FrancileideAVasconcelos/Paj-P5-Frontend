@@ -1,15 +1,31 @@
+/**
+ * @file ForgotPassword.jsx
+ * @description Componente de página que permite aos utilizadores iniciarem o processo de recuperação de palavra-passe, inserindo o seu endereço de email.
+ */
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { UserService } from '../services/api';
 import '../styles/loginRegister.css';
 import {useTranslation} from "react-i18next";
 
+/**
+ * Componente funcional para renderizar o formulário de pedido de recuperação de password.
+ *
+ * @component
+ * @returns {JSX.Element} O ecrã de recuperação de palavra-passe.
+ */
 export default function ForgotPassword() {
     const [email, setEmail] = useState('');
     const [mensagem, setMensagem] = useState('');
     const [loading, setLoading] = useState(false);
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
 
+    /**
+     * Submete o pedido de recuperação de password ao backend usando o email fornecido.
+     * @async
+     * @param {React.FormEvent} e - Evento de formulário intercetado.
+     */
     const handleSubmeter = async (e) => {
         e.preventDefault();
         setLoading(true);

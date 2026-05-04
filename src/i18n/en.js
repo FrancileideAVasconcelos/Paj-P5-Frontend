@@ -223,19 +223,23 @@ const en = {
             "aviso_apagar": "Are you sure you want to permanently delete this account?",
             "aviso_inativar": "Are you sure you want to deactivate this account?",
             "aviso_reativar": "Are you sure you want to reactivate this account?",
+            "alerta_apagar": "User successfully deleted",
+
+            //cliente
             "aviso_apagar_cliente": "Are you sure you want to PERMANENTLY delete this Client?",
             "aviso_reativar_cliente": "Are you sure you want to reactivate this client?",
             "alerta_cliente_apagado": "Client permanently deleted!",
             "alerta_cliente_reativado": "Client reactivated successfully!",
             "erro_reativar_cliente": "Error reactivating client",
             "erro_apagar_cliente_permanente": "Error trying to PERMANENTLY delete the Client",
+
+            //lead
             "aviso_apagar_lead": "Are you sure you want to PERMANENTLY delete this Lead?",
             "aviso_reativar_lead": "Are you sure you want to reactivate this Lead?",
-            "alerta_lead_apagado": "Lead permanently deleted!",
+            "alerta_lead_apagada": "Lead permanently deleted!",
             "alerta_lead_reativada": "Lead reactivated successfully!",
             "erro_reativar_lead": "Error reactivating lead",
             "erro_apagar_lead_permanente": "Error trying to PERMANENTLY delete the Lead",
-
 
             "tabs": {
                 "clientes": "Clients ({{total}})",
