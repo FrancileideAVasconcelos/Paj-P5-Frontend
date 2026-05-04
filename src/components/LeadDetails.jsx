@@ -108,10 +108,10 @@ export default function LeadDetails() {
 
     // --- FUNÇÃO PARA APAGAR PERMANENTEMENTE (SÓ ADMIN) ---
     const handleDeletePermanent = async () => {
-        if (window.confirm(t('admin_users_details.aviso_apagar_lead'))) {
+        if (window.confirm(t('admin_user_details.aviso_apagar_lead'))) {
             try {
                 await AdminService.deleteItemPermanent('lead', id);
-                alert(t('admin_users_details.alerta_lead_apagada'));
+                alert(t('admin_user_details.alerta_lead_apagada'));
                 navigate(-1); // Volta para trás
             } catch (e) {
                 alert(t('admin_user_details.erro_apagar_lead_permanente'));
@@ -193,7 +193,7 @@ export default function LeadDetails() {
                             <>
                                 {currentLead.ativo ? (
                                     <button onClick={handleRemover} className="btn-save-red" style={{ backgroundColor: '#f39c12' }}>
-                                        <i className="fa-solid fa-ban"></i> {t('admin_user_details.lista.inativar')}
+                                        <i className="fa-solid fa-ban"></i> {t('geral.remover')}
                                     </button>
                                 ) : (
                                     <button onClick={handleReativar} className="btn-save" style={{ backgroundColor: '#27ae60' }}>

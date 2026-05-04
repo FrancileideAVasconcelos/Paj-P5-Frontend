@@ -266,6 +266,10 @@
         font-size: 13px;
         gap: 5px;
     }
+
+    footer {
+        grid-column: 1 / -1;
+    }
 }
 
 
@@ -274,12 +278,16 @@ footer {
     background-color: var(--bg-footer, #f8f9fa);
     color: var(--text-muted, #6c757d);
     text-align: center;
-    padding: 15px;
+    padding: 5px 10px;
     font-size: 14px;
     border-top: 1px solid #dee2e6;
     width: 100%;
-    grid-column: 1 / -1;
     margin-top: auto;
+
+    /* A MAGIA: Em vez de 1 / -1 (ecrã todo), ocupa apenas a coluna 2 (direita) */
+    grid-column: footer;
+    position: relative;
+    z-index: 1050;
 }
 
 footer p {

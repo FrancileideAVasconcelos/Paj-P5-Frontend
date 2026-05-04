@@ -223,15 +223,19 @@ const pt = {
             "aviso_apagar": "Tem certeza que deseja apagar esta conta permanentemente?",
             "aviso_inativar": "Tem certeza que deseja inativar esta conta?",
             "aviso_reativar": "Tem certeza que deseja reativar esta conta?",
+            "alerta_apagar": "Usuário apagado com sucesso",
+
+            //cliente
             "aviso_apagar_cliente": "Tem a certeza que deseja apagar este Cliente PERMANENTEMENTE?",
             "aviso_reativar_cliente": "Tem certeza que deseja reativar esse cliente?",
             "alerta_cliente_apagado": "Cliente apagado permanentemente!",
             "alerta_cliente_reativado": "Cliente reativado com sucesso!",
             "erro_reativar_cliente": "Erro ao reativar cliente",
             "erro_apagar_cliente_permanente": "Erro ao tentar apagar o Cliente PERMANENTEMENTE",
+            //lead
             "aviso_apagar_lead": "Tem a certeza que deseja apagar esta Lead PERMANENTEMENTE?",
             "aviso_reativar_lead": "Tem certeza que deseja reativar essa Lead?",
-            "alerta_lead_apagado": "Lead apagada permanentemente!",
+            "alerta_lead_apagada": "Lead apagada permanentemente!",
             "alerta_lead_reativada": "Lead reativada com sucesso!",
             "erro_reativar_lead": "Erro ao reativar lead",
             "erro_apagar_lead_permanente": "Erro ao tentar apagar a Lead PERMANENTEMENTE",
@@ -268,6 +272,22 @@ const pt = {
         },
         "footer": {
             "title": "Programação Avançada em Java"
+        },
+        "console_logs": {
+            "erro_perfil": "Erro ao buscar perfil:",
+            "erro_pass_atual": "A Senha atual esta incorreta",
+            "erro_editar_user": "Erro ao editar utilizador:",
+            "erro_detalhes": "Erro ao carregar detalhes:",
+            "erro_criar_lead": "Erro ao criar lead:",
+            "erro_editar_lead": "Erro ao atualizar lead:",
+            "erro_eliminar_lead": "Erro ao eliminar lead:",
+            "erro_editar_client": "Erro ao atualizar cliente:",
+            "erro_eliminar_client": "Erro ao eliminar cliente:",
+            "erro_alterar": "Erro ao alterar estado de",
+            "erro_apagar": "Erro ao apagar",
+            "erro_alterar_todos": "Erro ao alterar estado de todos os",
+            "erro_apagar_todos": "Erro ao apagar todos os",
+            "erro_geral": "Erro na operação:"
         }
     }
 };

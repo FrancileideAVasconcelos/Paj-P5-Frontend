@@ -268,6 +268,22 @@ const en = {
         },
         "footer": {
             "title": "Advanced Java Programming"
+        },
+        "console_logs": {
+            "erro_perfil": "Error fetching profile:",
+            "erro_pass_atual": "The current password is incorrect",
+            "erro_editar_user": "Error editing user:",
+            "erro_detalhes": "Error loading details:",
+            "erro_criar_lead": "Error creating lead:",
+            "erro_editar_lead": "Error updating lead:",
+            "erro_eliminar_lead": "Error deleting lead:",
+            "erro_editar_client": "Error updating client:",
+            "erro_eliminar_client": "Error deleting client:",
+            "erro_alterar": "Error changing status of",
+            "erro_apagar": "Error deleting",
+            "erro_alterar_todos": "Error changing status of all",
+            "erro_apagar_todos": "Error deleting all",
+            "erro_geral": "Operation error:"
         }
     }
 };

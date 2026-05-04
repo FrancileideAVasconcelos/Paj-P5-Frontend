@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { AdminService } from "../services/api.js";
+import i18n from "i18next";
 
 const useAdminStore = create((set, get) => ({
 
@@ -42,7 +43,7 @@ const useAdminStore = create((set, get) => ({
             }));
             return true;
         } catch (error) {
-            console.error("Erro ao editar utilizador:", error);
+            console.error(i18n.t('console_logs.erro_editar_user'), error);
             return false;
         }
     },
@@ -92,11 +93,11 @@ const useAdminStore = create((set, get) => ({
                 loadingDetails: false
             });
         } catch (error) {
-            console.error("Erro ao carregar detalhes:", error);
+            console.error(i18n.t('console_logs.erro_detalhes'), error);
             set({
                 userClients: [],
                 userLeads: [],
-                error: error.message || "Erro ao carregar detalhes",
+                error: error.message || i18n.t('console_logs.erro_detalhes'),
                 loadingDetails: false
             });
         }
@@ -114,7 +115,7 @@ const useAdminStore = create((set, get) => ({
             }));
             return true;
         } catch (error) {
-            console.error("Erro ao editar cliente:", error);
+            console.error(i18n.t('console_logs.erro_editar_client'), error);
             return false;
         }
     },
@@ -127,7 +128,7 @@ const useAdminStore = create((set, get) => ({
             }));
             return true;
         } catch (error) {
-            console.error("Erro ao editar lead:", error);
+            console.error(i18n.t('console_logs.erro_editar_lead'), error);
             return false;
         }
     },
@@ -147,7 +148,7 @@ const useAdminStore = create((set, get) => ({
                 };
             });
         } catch (error) {
-            console.error(`Erro ao alterar estado de ${type}:`, error);
+            console.error(`${i18n.t('console_logs.erro_editar_lead')} ${type}:`, error);
         }
     },
 
@@ -162,7 +163,7 @@ const useAdminStore = create((set, get) => ({
                 };
             });
         } catch (error) {
-            console.error(`Erro ao apagar ${type}:`, error);
+            console.error(`${i18n.t('console_logs.erro_apagar')} ${type}:`, error);
         }
     },
 
@@ -177,7 +178,7 @@ const useAdminStore = create((set, get) => ({
                 };
             });
         } catch (error) {
-            console.error(`Erro ao alterar estado de todos os ${type}s:`, error);
+            console.error(`${i18n.t('console_logs.erro_alterar_todos')} ${type}s:`, error);
         }
     },
 
@@ -192,7 +193,7 @@ const useAdminStore = create((set, get) => ({
                 };
             });
         } catch (error) {
-            console.error(`Erro ao apagar todos os ${type}s:`, error);
+            console.error(`${i18n.t('console_logs.erro_apagar')} ${type}s:`, error);
         }
     }
 

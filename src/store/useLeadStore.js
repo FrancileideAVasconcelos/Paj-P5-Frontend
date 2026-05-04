@@ -6,6 +6,7 @@
 
 import { create } from 'zustand';
 import { LeadService } from "../services/api.js";
+import i18n from "i18next";
 
 /**
  * Store global para a gestão de leads.
@@ -60,7 +61,7 @@ const useLeadStore = create((set, get) => ({
             const data = await LeadService.getById(id);
             set({ currentLead: data, loading: false });
         } catch (error) {
-            console.error("Erro ao carregar detalhes:", error);
+            console.error(i18n.t('console_logs.erro_detalhes'), error);
             set({ loading: false });
         }
     },
@@ -83,7 +84,7 @@ const useLeadStore = create((set, get) => ({
             set({ loading: false });
             return true;
         } catch (error) {
-            console.error("Erro ao criar lead:", error);
+            console.error(i18n.t('console_logs.erro_criar_lead'), error);
             set({ loading: false });
             return false;
         }
@@ -113,7 +114,7 @@ const useLeadStore = create((set, get) => ({
 
             return true;
         } catch (error) {
-            console.error("Erro ao atualizar lead:", error);
+            console.error(i18n.t('console_logs.erro_editar_lead'), error);
             set({ loading: false });
             return false;
         }
@@ -141,7 +142,7 @@ const useLeadStore = create((set, get) => ({
 
             return true;
         } catch (error) {
-            console.error("Erro ao eliminar lead:", error);
+            console.error(i18n.t('console_logs.erro_eliminar_lead'), error);
             set({ loading: false });
             return false;
         }

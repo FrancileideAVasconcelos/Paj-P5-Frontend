@@ -96,7 +96,7 @@ export default function ClientDetails() {
     };
 
     const handleDeletePermanent = async () => {
-        if (window.confirm(t('admin_users_details.aviso_apagar_cliente'))){
+        if (window.confirm(t('admin_user_details.aviso_apagar_cliente'))){
             try {
                 await AdminService.deleteItemPermanent('client', id);
                 alert(t('admin_user_details.alerta_cliente_apagado'));
@@ -169,7 +169,7 @@ export default function ClientDetails() {
                             <>
                                 {currentClient.ativo ? (
                                     <button onClick={handleRemover} className="btn-save-red" style={{ backgroundColor: '#f39c12' }}>
-                                        <i className="fa-solid fa-ban"></i> {t('admin_user_details.lista.inativar')}
+                                        <i className="fa-solid fa-ban"></i> {t('geral.remover')}
                                     </button>
                                 ) : (
                                     <button onClick={handleReativar} className="btn-save" style={{ backgroundColor: '#27ae60' }}>

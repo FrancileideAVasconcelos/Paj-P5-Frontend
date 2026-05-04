@@ -119,7 +119,7 @@ export default function Dashboard() {
                 </h2>
 
                 {/* --- CARTÕES SUPERIORES --- */}
-                <div className="stats-grid">
+                <div className={`stats-grid ${isAdmin ? 'admin-grid' : 'user-grid'}`}>
                     <div className="stat-card clickable" onClick={() => navigate('/leads')}>
                         <div className="stat-icon"><i className="fa-solid fa-bullseye" style={{color: '#0ea5e9'}}></i></div>
                         <div><h3>{t('dashboard.total_leads')}</h3><p className="stat-number">{stats.totalLeads}</p></div>

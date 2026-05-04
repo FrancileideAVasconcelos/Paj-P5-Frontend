@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import { UserService } from "../services/api.js";
+import i18n from "../i18n/index.js";
 
 /**
  * Store global para a gestão de dados do utilizador.
@@ -39,7 +40,7 @@ const useUserStore = create((set, get) => ({
             const response = await UserService.getprofile();
             set({ currentUser: response });
         } catch (error) {
-            console.error("Erro ao buscar perfil:", error);
+            console.error(i18n.t('console_logs.erro_perfil'), error);
             set({ currentUser: null });
         }
     },
@@ -58,7 +59,7 @@ const useUserStore = create((set, get) => ({
             return { sucesso: true };
         } catch (error) {
             // Captura o erro (normalmente 403 Forbidden do backend)
-            return { sucesso: false, mensagem: "A password atual está incorreta." };
+            return { sucesso: false, mensagem: i18n.t('console_logs.erro_pass_atual') };
         }
     },
 

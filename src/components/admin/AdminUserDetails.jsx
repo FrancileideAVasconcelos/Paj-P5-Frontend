@@ -164,9 +164,9 @@ export default function AdminUserDetails() {
      */
     const handleToggleAll = async (type, inativar) => {
 
-        const tipoTraduzido = type === 'client' ? t('admin.detalhes.label_clientes')
-            : t('admin.detalhes.label_leads');
-        const chave = inativar ? 'admin.detalhes.confirm_lote_inativar' : 'admin.detalhes.confirm_lote_reativar';
+        const tipoTraduzido = type === 'client' ? t('admin_user_details.botoes_lote.label_clientes')
+            : t('admin_user_details.botoes_lote.label_leads');
+        const chave = inativar ? 'admin_user_details.botoes_lote.confirm_lote_inativar' : 'admin_user_details.botoes_lote.confirm_lote_reativar';
 
         if (window.confirm(t(chave, { tipo: tipoTraduzido, username }))) {
             await toggleAllItemsStatus(token, username, type, inativar);
@@ -180,9 +180,9 @@ export default function AdminUserDetails() {
      */
     const handleDeleteAll = async (type) => {
         const tipoTraduzido = type === 'client' ?
-            t('admin_user_details.label_clientes') : t('admin_user_details.label_leads');
+            t('admin_user_details.botoes_lote.label_clientes') : t('admin_user_details.botoes_lote.label_leads');
 
-        if (window.confirm(t('admin_user_details.confirm_lote_excluir', { tipo: tipoTraduzido }))) {
+        if (window.confirm(t('admin_user_details.botoes_lote.confirm_lote_excluir', { tipo: tipoTraduzido }))) {
             await deleteAllItemsPermanent(token, username, type);
         }
     };
@@ -207,10 +207,10 @@ export default function AdminUserDetails() {
      * @async
      */
     const handleDeleteUserPermanent = async () => {
-        if (window.confirm(t('admin.detalhes.confirm_excluir_user', { username }))) {
+        if (window.confirm(t('admin_user_details.aviso_apagar'))) {
             const sucesso = await deleteUser(token, username, true);
             if (sucesso) {
-                alert(t('admin.detalhes.sucesso_excluir_user'));
+                alert(t('admin.detalhes.alerta_apagar'));
                 navigate('/admin');
             }
         }

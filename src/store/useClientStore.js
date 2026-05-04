@@ -66,7 +66,7 @@ const useClientStore = create((set, get) => ({
             const data = await ClientService.getById(id);
             set({ currentClient: data, loading: false });
         } catch (error) {
-            console.error("Erro ao carregas detalhes:", error);
+            console.error(i18n.t('console_logs.erro_detalhes'), error);
             set({ loading: false});
         }
     },
@@ -144,7 +144,7 @@ const useClientStore = create((set, get) => ({
 
             return true;
         } catch (error) {
-            console.error("Erro ao eliminar cliente:", error);
+            console.error(i18n.t('console_logs.erro_eliminar_client'), error);
             set({ loading: false });
             return false;
         }

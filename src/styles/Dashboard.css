@@ -25,6 +25,7 @@
     border: 1px solid #e2e8f0;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 15px; /* Reduzimos o espaço entre o ícone e o texto */
     transition: all 0.2s ease;
 }
@@ -102,8 +103,11 @@
 }
 
 @media (min-width: 1024px) {
-    .stats-grid {
-        grid-template-columns: repeat(4, 1fr);
+    .stats-grid.admin-grid {
+        grid-template-columns: repeat(4, 1fr); /* 4 colunas para Admins */
+    }
+    .stats-grid.user-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 colunas largas para Users normais */
     }
 }
 
